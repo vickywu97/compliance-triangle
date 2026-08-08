@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+
+# Demo outputs are generated; keep the directory, ignore contents
+demo/output/*.md
+
+# OS
+.DS_Store
