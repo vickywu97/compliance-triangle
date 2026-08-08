@@ -3,6 +3,8 @@
 > 企业三域合规助手（法律合规 · 税务合规 · 知识产权合规），由**同一人**——律师 / 税务师 / 专利代理师——签字背书。
 > 所有 AI 生成的法条引注都经过**存在性 / 时效性 / 内容匹配**三层校验，不过门禁的红框标出。
 
+> 📦 **双仓库作品集 · 产品篇** —— 地基是 [`legal-hallucination-bench`](https://github.com/vickywu97/legal-hallucination-bench)（量化"AI 法律引注幻觉"的离线基准）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md)。
+
 ---
 
 ## 产品叙事（作品集核心）
@@ -34,6 +36,9 @@
 - **校验引擎**：直接复用 `benchmark/verify.py` 的 `resolve_article` + `content_diff`，与基准共用「来源可信度门禁」。
 - **LLM 接入**：`compliance_triangle/llm_adapter.py`（5 个国产模型 OpenAI 兼容层，密钥走环境变量）。
 
+> 与地基仓库的"地基 → 产品"关系图：
+> ![作品集架构](https://raw.githubusercontent.com/vickywu97/legal-hallucination-bench/master/docs/portfolio_architecture.svg)
+
 ## 快速开始
 
 ```bash
@@ -56,6 +61,9 @@ python demo/run_demo.py
 - 5 个演示场景分页签切换，每条引注渲染为彩色卡片（🟢通过 / 🟡待复核 / 🔴未通过），
   并展示「AI 引述 vs 官方原文」对照；
 - 直接在文件管理器双击打开即可，**不需要启动任何服务**。
+
+> 展示页长这样（示意，真实页面可交互、可离线打开）：
+> ![合规三角仪表盘预览](docs/dashboard_preview.svg)
 
 **B. 本地交互服务（粘贴你自己的 AI 回答实时校验）**
 零第三方依赖，仅用 Python 标准库 `http.server`：
@@ -90,7 +98,7 @@ result = verify_answer("S1", answer, "2025-01-01")
 - Phase 2（前端）：合规备忘录 UI + 引注核验可视化 ✅
   - 自包含静态展示页 `demo/output/index.html`（离线、零依赖、双击即用）
   - 零依赖本地服务 `python -m compliance_triangle.web`（实时粘贴校验 `/verify`）
-- Phase 3（作品集化）：独立 Release / README / 推广
+- Phase 3（作品集化）：独立 README / 互链 / 架构图 / 预览图 / 跨仓库联动 ✅
 
 ## 授权
 
