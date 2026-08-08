@@ -19,7 +19,8 @@ sys.path.insert(0, REPO_ROOT)
 
 from compliance_triangle import kb
 from compliance_triangle.verify_integration import verify_answer
-from compliance_triangle.memo import build_memo_md
+from compliance_triangle.memo import build_memo_md, write_report_html
+from compliance_triangle.runner import build_demo_data
 from demo.scenarios import SCENARIOS
 
 
@@ -32,8 +33,9 @@ def main() -> int:
 
     total = {"🟢": 0, "🟡": 0, "🔴": 0}
     print("\n=== 合规三角 · 离线演示（引注核验） ===\n")
-    for s in SCENARIOS:
-        result = verify_answer(s["id"], s["answer"], s["as_of_date"], laws)
+    demo_data = build_demo_data(laws)
+    for s, entry in zip(SCENARIOS, demo_data):
+        result = entry["result"]
         for b, n in result["counts"].items():
             total[b] += n
         memo = build_memo_md(s, s["answer"], result)
@@ -43,6 +45,11 @@ def main() -> int:
         c = result["counts"]
         print(f"  [{s['id']}] {s['title']:<10} "
               f"🟢{c['🟢']} 🟡{c['🟡']} 🔴{c['🔴']}  -> {out_path}")
+
+    # Self-contained static HTML showcase (double-click to open, no server)
+    html_path = os.path.join(out_dir, "index.html")
+    write_report_html(demo_data, html_path, with_live=False, kb_count=len(laws))
+    print(f"\n[html] 静态展示页 -> {html_path}")
 
     print(f"\n[sum] 🟢{total['🟢']} 🟡{total['🟡']} 🔴{total['🔴']} "
           f"(共 {sum(total.values())} 条引注)")

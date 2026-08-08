@@ -40,12 +40,34 @@
 # 1) 把 Bench 仓库作为同级目录克隆（或设置环境变量指向它）
 git clone https://github.com/vickywu97/legal-hallucination-bench.git ../legal-hallucination-bench
 
-# 2) 离线演示（无需 API Key / 网络）：跑 5 个内置场景，生成合规备忘录
+# 2) 离线演示（无需 API Key / 网络）：跑 5 个内置场景，生成合规备忘录 + 静态展示页
 python demo/run_demo.py
-# -> 输出写入 demo/output/*.md
+# -> 合规备忘录: demo/output/S1..S5_*.md
+# -> 静态展示页: demo/output/index.html  （双击即可在浏览器打开，零依赖、离线）
 ```
 
 演示场景均内置「含幻觉」的预置回答，直接展示校验层如何拦截虚构条号与已废止法名。
+
+### Phase 2 前端 · 两种打开方式
+
+**A. 纯静态展示页（推荐先看这个，双击即用）**
+`demo/output/index.html` 是一个**自包含、零外部依赖、可离线**的单文件页面：
+- 顶部「核验总览」：🟢🟡🔴 计数 KPI + 占比条 + 按法律分布；
+- 5 个演示场景分页签切换，每条引注渲染为彩色卡片（🟢通过 / 🟡待复核 / 🔴未通过），
+  并展示「AI 引述 vs 官方原文」对照；
+- 直接在文件管理器双击打开即可，**不需要启动任何服务**。
+
+**B. 本地交互服务（粘贴你自己的 AI 回答实时校验）**
+零第三方依赖，仅用 Python 标准库 `http.server`：
+
+```bash
+python -m compliance_triangle.web            # 默认 http://127.0.0.1:8000
+PORT=8080 python -m compliance_triangle.web  # 自定义端口
+```
+
+打开浏览器后，在「实时校验」区粘贴任意 LLM 生成的合规分析（含《法律》第X条引注），
+点击「运行校验」，系统会用同一套 verify 引擎逐条核验并返回 🟢🟡🔴 结论。
+（该页也内置了上面的 5 个演示场景展示。）
 
 ## 接入真实 LLM（可选）
 
@@ -65,7 +87,9 @@ result = verify_answer("S1", answer, "2025-01-01")
 ## 路线图
 
 - Phase 1（后端骨架）：场景输入 → LLM → verify 校验 → 结构化 JSON ✅ 演示可用
-- Phase 2（前端）：合规备忘录 UI + 引注核验可视化（零依赖静态页）
+- Phase 2（前端）：合规备忘录 UI + 引注核验可视化 ✅
+  - 自包含静态展示页 `demo/output/index.html`（离线、零依赖、双击即用）
+  - 零依赖本地服务 `python -m compliance_triangle.web`（实时粘贴校验 `/verify`）
 - Phase 3（作品集化）：独立 Release / README / 推广
 
 ## 授权
