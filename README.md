@@ -63,7 +63,7 @@ python demo/run_demo.py
 - 直接在文件管理器双击打开即可，**不需要启动任何服务**。
 
 > 展示页长这样（示意，真实页面可交互、可离线打开）：
-> ![合规三角仪表盘预览](docs/dashboard_preview.svg)
+> ![合规三角仪表盘预览](docs/dashboard_preview.png)
 
 **B. 本地交互服务（粘贴你自己的 AI 回答实时校验）**
 零第三方依赖，仅用 Python 标准库 `http.server`：
