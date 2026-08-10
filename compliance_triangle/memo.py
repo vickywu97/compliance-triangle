@@ -92,8 +92,9 @@ body { margin:0; font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe
 .run { background:#4f46e5; color:#fff; border:none; padding:9px 18px; border-radius:10px;
        cursor:pointer; font-size:14px; font-weight:600; }
 .run:hover { background:#4338ca; }
-#answer { width:100%; min-height:140px; border:1px solid #cbd5e1; border-radius:10px;
+#answer, #scenario { width:100%; min-height:140px; border:1px solid #cbd5e1; border-radius:10px;
           padding:12px; font-size:14px; font-family:inherit; resize:vertical; }
+#scenario { min-height:80px; margin-bottom:10px; }
 .liveOut { margin-top:16px; }
 .liveOut.show { display:block; }
 .loading, .err { padding:16px; border-radius:10px; font-size:14px; }
@@ -207,24 +208,67 @@ function runVerify(){
       '<div class="err">校验失败：'+esc(e)+'（需启动本地服务 python -m compliance_triangle.web）</div>'; });
 }
 
+function runModelVerify(){
+  var sc=document.getElementById('scenario');
+  if(!sc){ alert('本页面未启用实时模型（仅粘贴模式）。'); return; }
+  var scenario=sc.value;
+  var model=document.getElementById('model')?document.getElementById('model').value:'';
+  var asof=document.getElementById('as_of').value||'2026-08-01';
+  if(!scenario.trim()){ alert('请先填写合规场景'); return; }
+  document.getElementById('liveOut').innerHTML='<div class="loading">模型生成中…</div>';
+  fetch('/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({scenario:scenario,as_of_date:asof,model:model})})
+    .then(function(r){return r.json();})
+    .then(function(d){ if(d.error){ document.getElementById('liveOut').innerHTML=
+      '<div class="err">'+esc(d.error)+'</div>'; }
+      else { if(d.answer){ document.getElementById('answer').value=d.answer; }
+             renderResult(d.result); } })
+    .catch(function(e){ document.getElementById('liveOut').innerHTML=
+      '<div class="err">调用失败：'+esc(e)+'</div>'; });
+}
+
 document.addEventListener('DOMContentLoaded',function(){
   renderSummary(); renderScenarios();
-  if(WITH_LIVE){ document.getElementById('runBtn').addEventListener('click',runVerify); }
+  if(WITH_LIVE){
+    var rb=document.getElementById('runBtn'); if(rb){ rb.addEventListener('click',runVerify); }
+    var rmb=document.getElementById('runModelBtn'); if(rmb){ rmb.addEventListener('click',runModelVerify); }
+  }
 });
 """
 
-_LIVE_HTML = """
+_LIVE_SECTION_TPL = """
 <section class="block live">
-  <h2>实时校验 · 粘贴你自己的 AI 合规分析</h2>
-  <p class="hint">将任意 LLM 生成的合规分析（含《法律名称》第X条引注）粘贴到下方，点击运行，系统会用同一套 verify 引擎逐条核验。</p>
+  <h2>实时校验 · 让 AI 分析你的合规场景</h2>
+  <p class="hint">两种用法：① 填写场景 + 选择模型，点击「调用模型并校验」由系统调用国产大模型生成分析并自动逐条核验；② 直接粘贴任意 LLM 生成的合规分析（含《法律》第X条引注）到下方，点击「运行校验（粘贴模式）」。</p>
+  {note}
   <div class="live-controls">
     <label>分析基准日 <input id="as_of" type="date" value="2026-08-01"></label>
-    <button id="runBtn" class="run">运行校验</button>
+    {model_select}
+    {model_btn}
+    <button id="runBtn" class="run">运行校验（粘贴模式）</button>
   </div>
-  <textarea id="answer" placeholder="例：依据《公司法》第142条……《个人所得税法》第2条……《旧公司法》第16条……"></textarea>
+  <textarea id="scenario" placeholder="填写合规场景，例如：公司拟为关联方提供大额保证担保，需确认决议程序与违约救济……"></textarea>
+  <textarea id="answer" placeholder="或在此粘贴 AI 生成的合规分析（含《法律名称》第X条引注），例如：依据《公司法》第142条……《个人所得税法》第2条……《旧公司法》第16条……"></textarea>
   <div id="liveOut" class="liveOut"></div>
 </section>
 """
+
+
+def _build_live_section(live_models) -> str:
+    """Render the live section. With models available: show a model picker +
+    a 'call model' button. Without: paste-only mode + a clear notice."""
+    if live_models:
+        opts = "".join(f'<option value="{m}">{m}</option>' for m in live_models)
+        model_select = f'<label>模型 <select id="model">{opts}</select></label>'
+        model_btn = '<button id="runModelBtn" class="run">调用模型并校验</button>'
+        note = ""
+    else:
+        model_select = ""
+        model_btn = ""
+        note = ('<p class="notice">⚠️ 未检测到任何模型 API key（环境变量），实时调用模型已禁用。'
+                '可粘贴 AI 输出进行核验，或在环境中配置 DEEPSEEK_API_KEY 等后重启服务以启用实时模式。</p>')
+    return _LIVE_SECTION_TPL.format(note=note, model_select=model_select,
+                                    model_btn=model_btn)
 
 _TPL = """<!DOCTYPE html>
 <html lang="zh-CN">
@@ -322,16 +366,23 @@ def build_report_html(data: List[Dict], with_live: bool = True,
                        kb_laws: Optional[int] = None,
                        kb_articles: Optional[int] = None,
                        notice: Optional[str] = None,
-                       caveats: Optional[List[str]] = None) -> str:
+                       caveats: Optional[List[str]] = None,
+                       live_models: Optional[List[str]] = None) -> str:
     """Build a self-contained, offline HTML report from ``data`` (list of
     ``{"scenario", "answer", "result"}``). No CDN/external resources.
 
     ``kb_laws`` / ``kb_articles`` : honest KB size for the hero banner.
     ``notice``  : an amber banner (e.g. KB not loaded) shown under the hero.
     ``caveats`` : a list of honest data-coverage caveats shown in the footnote.
+    ``live_models`` : wired model labels (API key present). When non-empty, the
+        live section shows a model picker + 'call model' button; when empty/None
+        it falls back to paste-only mode with a clear notice.
     """
     data_json = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
-    live_section = _LIVE_HTML if with_live else ""
+    if with_live:
+        live_section = _build_live_section(live_models or [])
+    else:
+        live_section = ""
     notice_html = (f'<p class="notice">⚠️ {_esc(notice)}</p>' if notice else "")
     caveats_html = ""
     if caveats:

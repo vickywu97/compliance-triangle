@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout compliance-triangle
+        uses: actions/checkout@v4
+
+      - name: Checkout legal-hallucination-bench (KB sibling)
+        uses: actions/checkout@v4
+        with:
+          repository: vickywu97/legal-hallucination-bench
+          path: ../legal-hallucination-bench
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v

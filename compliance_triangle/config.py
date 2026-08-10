@@ -56,6 +56,31 @@ COVERAGE_CAVEATS = [
     "（对这几条的引用会被判「未找到」）。",
 ]
 
+# --- English law-name aliases (real-world LLM outputs may use English) ------ #
+# Some models cite laws in English ("《Company Law》Article 142"). Map the common
+# English names to the KB's Chinese law names so they resolve instead of being
+# flagged UNKNOWN_LAW. Unknown English names pass through unchanged (-> NOT_FOUND,
+# which is the honest outcome for a name the KB can't match).
+EN_LAW_ALIASES = {
+    "company law": "公司法",
+    "company law of the people's republic of china": "公司法",
+    "civil code": "民法典",
+    "civil code of the people's republic of china": "民法典",
+    "criminal law": "刑法",
+    "criminal law of the people's republic of china": "刑法",
+    "patent law": "专利法",
+    "patent law of the people's republic of china": "专利法",
+    "tax administration law": "税收征收管理法",
+    "tax collection administration law": "税收征收管理法",
+    "law on the administration of tax collection": "税收征收管理法",
+    "vat law": "增值税法",
+    "value-added tax law": "增值税法",
+    "enterprise income tax law": "企业所得税法",
+    "individual income tax law": "个人所得税法",
+    "personal income tax law": "个人所得税法",
+}
+
+
 # --- Domestic model registry (mirrors scripts/generate_answers.py) --------- #
 # All providers are OpenAI-compatible. API keys are read from the environment
 # (never hardcoded). A model with no key is skipped rather than failing.

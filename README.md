@@ -66,7 +66,7 @@ python demo/run_demo.py
   并展示「AI 引述 vs 官方原文」对照；
 - 直接在文件管理器双击打开即可，**不需要启动任何服务**。
 
-> 展示页长这样（示意，真实页面可交互、可离线打开）：
+> 仪表盘长这样（基于真实 demo 数据生成的预览图，完整交互页请打开 `demo/output/index.html`）：
 > ![合规三角仪表盘预览](docs/dashboard_preview.png)
 
 **B. 本地交互服务（粘贴你自己的 AI 回答实时校验）**
@@ -81,33 +81,48 @@ PORT=8080 python -m compliance_triangle.web  # 自定义端口
 点击「运行校验」，系统会用同一套 verify 引擎逐条核验并返回 🟢🟡🔴 结论。
 （该页也内置了上面的 5 个演示场景展示。）
 
-## 接入真实 LLM（可选 · 当前为能力层，尚未接 CLI）
+## 实时调用 LLM 并自动校验（已接通）
 
-`compliance_triangle/llm_adapter.py` 提供了 5 个国产模型的 OpenAI 兼容调用层，
-`prompt_template.py` 提供了 8 法域护栏提示词。你可以这样把「提问 → 调模型 → 校验」
-串起来：
+除「粘贴 AI 回答再校验」外，本产品已把 `llm_adapter` + `prompt_template` 串成端到端流程：
+**填场景 → 调国产模型生成分析 → 同一套 verify 引擎逐条核验**。两种方式任选：
 
-```python
-from compliance_triangle.prompt_template import build_messages
-from compliance_triangle.llm_adapter import call_model, available_models
-from compliance_triangle.verify_integration import verify_answer
+**① 命令行（CLI）**
 
-msgs = build_messages("员工股权激励", "2025-01-01")
-answer = call_model("DeepSeek-V3", msgs)   # 需设置 DEEPSEEK_API_KEY
-result = verify_answer("S1", answer, "2025-01-01")
+```bash
+# 需先配置对应模型密钥（见下方环境变量）
+python -m compliance_triangle.live \
+    --scenario "公司拟为关联方提供大额保证担保，需确认决议程序与违约救济" \
+    --as_of 2025-01-01 --model DeepSeek-V3 --out memo.md
 ```
 
-模型密钥从环境变量读取（不硬编码）：`DEEPSEEK_API_KEY` / `ZHIPU_API_KEY` /
-`DASHSCOPE_API_KEY` / `MOONSHOT_API_KEY`。
+未指定 `--model` 时自动取第一个已配置密钥的模型；无密钥则明确报错退出（**不会静默失败**）。
 
-> **现状说明**：上面的 `llm_adapter` / `prompt_template` 是**可用的能力层**，但截至当前版本**尚未接到 CLI 或 `/verify` 端点**——即 Web 服务的「实时校验」校验的是**你粘贴进来的 AI 回答**，而不是自动调用模型生成后再校验。要跑通「端到端自动调模型并校验」，还需补一个 `verify_cli.py`（已列入路线图）。
+**② Web 端点 `/analyze`**
+
+启动 `python -m compliance_triangle.web` 后，在「实时校验」区选择模型并填写场景，
+点击「调用模型并校验」，服务会调用模型并将返回结果直接送入校验层（前端自动渲染 🟢🟡🔴）。
+
+模型密钥从环境变量读取（不硬编码，缺密钥时自动降级为「仅粘贴校验」模式，页面顶部给出提示）：
+`DEEPSEEK_API_KEY` / `ZHIPU_API_KEY` / `DASHSCOPE_API_KEY` / `MOONSHOT_API_KEY`。
+支持的 5 个模型见 `config.MODELS`（DeepSeek-V3 / DeepSeek-R1 / GLM-4-Flash / Qwen-Max / Kimi）。
+
+## 测试（Test suite）
+
+零依赖（`unittest`，仅标准库）。KB 相关用例需同级 `legal-hallucination-bench`：
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+覆盖：引注解析边界（无『条』、英文法名、续列、嵌套、引述冒号）、verify 三层校验、
+KB 计数（8 部法 / 2327 条）、Web 渲染降级与实时模型可用性门禁、实时调用流水线（mock 模型）。
 
 ## 已知限制 / Known Limitations
 
 - **信任分级暂未启用**：Bench 在 v1.3 将 2327 个节点全部升为 `verified`，因此本产品的「Tier A 专家逐条签核 / Tier B 官方提取未签核」分级门禁当前恒为真、不呈现。产品核验的是**存在性 / 时效性 / 内容逐字一致性**，而非逐节点 provenance 分级。
 - **增值税法覆盖 38/41 条**（见上「数据覆盖说明」）。
 - **运行时依赖 Bench KB**（见上「运行时依赖说明」）。
-- 引注解析对「不含『条』字的引注」「英文法名」「嵌套书名号」等边界支持有限（已在改进路线图中）。
+- 引注解析已覆盖常见边界：不含「条」字（第一百四十二条）、英文法名（《Company Law》Article 142）、续列（《公司法》第15条、第142条）、嵌套书名号、引述冒号接原文等；极冷门的写法仍可能漏解析，相关引注会判「未找到」而非误判通过。
 
 ## 路线图
 
@@ -116,6 +131,9 @@ result = verify_answer("S1", answer, "2025-01-01")
   - 自包含静态展示页 `demo/output/index.html`（离线、零依赖、双击即用）
   - 零依赖本地服务 `python -m compliance_triangle.web`（实时粘贴校验 `/verify`）
 - Phase 3（作品集化）：独立 README / 互链 / 架构图 / 预览图 / 跨仓库联动 ✅
+- 实时调用 LLM 并自动校验（`compliance_triangle/live.py` + Web `/analyze` 端点 + CLI）✅
+- 引注解析边界加固 + 零依赖测试套件（`tests/`）✅
+- 可信度修复（空回答误报🟢、KB 缺失优雅降级、VAT 覆盖标注、hero 计数）✅
 
 ## 授权
 

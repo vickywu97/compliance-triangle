@@ -24,6 +24,7 @@ from compliance_triangle import config, kb
 from compliance_triangle.verify_integration import verify_answer
 from compliance_triangle.memo import build_report_html
 from compliance_triangle.runner import build_demo_data
+from compliance_triangle import live as live_mod
 
 # Load the Bench KB at startup, but NEVER let a missing Bench repo crash the
 # whole server. If the KB can't be found, we still serve the (empty) offline
@@ -64,18 +65,25 @@ class Handler(BaseHTTPRequestHandler):
                 notice = ("基准库 legal-hallucination-bench 未加载，展示页为离线结构；"
                           "实时校验 /verify 暂不可用。请克隆同级仓库或设置环境变量 "
                           "COMPLIANCE_TRIANGLE_BENCH 指向它。")
+            live_models = []
+            if KB_AVAILABLE:
+                try:
+                    live_models = live_mod.live_models()
+                except Exception:  # noqa: BLE001 - never block the page render
+                    live_models = []
             html = build_report_html(DEMO_DATA, with_live=KB_AVAILABLE,
                                      kb_laws=KB_LAW_COUNT,
                                      kb_articles=KB_ARTICLE_COUNT,
                                      notice=notice,
-                                     caveats=config.COVERAGE_CAVEATS)
+                                     caveats=config.COVERAGE_CAVEATS,
+                                     live_models=live_models)
             self._send(200, html)
         else:
             self._send(404, "Not Found")
 
     def do_POST(self):
         p = urlparse(self.path).path
-        if p == "/verify":
+        if p in ("/verify", "/analyze"):
             if not KB_AVAILABLE:
                 self._send(503, json.dumps(
                     {"error": f"基准库未加载，无法核验：{KB_ERROR}"}, ensure_ascii=False),
@@ -85,11 +93,24 @@ class Handler(BaseHTTPRequestHandler):
                 length = int(self.headers.get("Content-Length", 0))
                 raw = self.rfile.read(length) if length else b"{}"
                 payload = json.loads(raw.decode("utf-8") or "{}")
-                answer = payload.get("answer", "")
                 as_of = payload.get("as_of_date") or "2026-08-01"
-                result = verify_answer("LIVE", answer, as_of, LAWS)
-                self._send(200, json.dumps(result, ensure_ascii=False),
-                           "application/json; charset=utf-8")
+                if p == "/verify":
+                    answer = payload.get("answer", "")
+                    result = verify_answer("LIVE", answer, as_of, LAWS)
+                    self._send(200, json.dumps(result, ensure_ascii=False),
+                               "application/json; charset=utf-8")
+                else:  # /analyze — call a live model, then verify its answer
+                    scenario = payload.get("scenario", "")
+                    model = payload.get("model", "")
+                    if not scenario.strip():
+                        self._send(400, json.dumps({"error": "缺少 scenario 字段"},
+                                                   ensure_ascii=False),
+                                   "application/json; charset=utf-8")
+                        return
+                    answer, result = live_mod.analyze(scenario, as_of, model, LAWS)
+                    self._send(200, json.dumps({"answer": answer, "result": result},
+                                               ensure_ascii=False),
+                               "application/json; charset=utf-8")
             except Exception as e:  # noqa: BLE001 - surface errors to client
                 self._send(500, json.dumps({"error": str(e)}, ensure_ascii=False),
                            "application/json; charset=utf-8")
@@ -104,7 +125,7 @@ def main() -> int:
     port = int(os.environ.get("PORT", "8000"))
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     print(f"合规三角 · 本地服务已启动: http://127.0.0.1:{port}")
-    print(f"  - KB: {KB_COUNT} 部法（来自 legal-hallucination-bench）")
+    print(f"  - KB: {KB_LAW_COUNT} 部法 / {KB_ARTICLE_COUNT} 条（来自 legal-hallucination-bench）")
     print(f"  - 演示场景: {len(DEMO_DATA)} 个")
     print("  - 按 Ctrl+C 停止")
     try:
