@@ -36,6 +36,10 @@
 - **校验引擎**：直接复用 `benchmark/verify.py` 的 `resolve_article` + `content_diff`，与基准共用「来源可信度门禁」。
 - **LLM 接入**：`compliance_triangle/llm_adapter.py`（5 个国产模型 OpenAI 兼容层，密钥走环境变量）。
 
+> **运行时依赖说明（诚实）**：本仓库**运行期**依赖同级 `legal-hallucination-bench` 的法条 KB（通过 `COMPLIANCE_TRIANGLE_BENCH` 环境变量或同级目录解析）。所谓「离线零依赖」严格成立的是**预生成的静态展示页** `demo/output/index.html`（双击即用、不连任何服务）；而 `python -m compliance_triangle.web` 与 `demo/run_demo.py` 在启动时需加载该 KB。若 KB 缺失，服务不会崩溃，而是降级展示离线结构并让 `/verify` 返回 503 明确提示。
+
+> **数据覆盖说明（诚实）**：增值税法（VAT_LAW）当前收录 **38 / 41** 条，第 39–41 条暂未入库，对这几条的引用会被判「未找到」。其余 7 部法为完整官方全文。
+
 > 与地基仓库的"地基 → 产品"关系图：
 > ![作品集架构](https://raw.githubusercontent.com/vickywu97/legal-hallucination-bench/master/docs/portfolio_architecture.svg)
 
@@ -77,7 +81,11 @@ PORT=8080 python -m compliance_triangle.web  # 自定义端口
 点击「运行校验」，系统会用同一套 verify 引擎逐条核验并返回 🟢🟡🔴 结论。
 （该页也内置了上面的 5 个演示场景展示。）
 
-## 接入真实 LLM（可选）
+## 接入真实 LLM（可选 · 当前为能力层，尚未接 CLI）
+
+`compliance_triangle/llm_adapter.py` 提供了 5 个国产模型的 OpenAI 兼容调用层，
+`prompt_template.py` 提供了 8 法域护栏提示词。你可以这样把「提问 → 调模型 → 校验」
+串起来：
 
 ```python
 from compliance_triangle.prompt_template import build_messages
@@ -91,6 +99,15 @@ result = verify_answer("S1", answer, "2025-01-01")
 
 模型密钥从环境变量读取（不硬编码）：`DEEPSEEK_API_KEY` / `ZHIPU_API_KEY` /
 `DASHSCOPE_API_KEY` / `MOONSHOT_API_KEY`。
+
+> **现状说明**：上面的 `llm_adapter` / `prompt_template` 是**可用的能力层**，但截至当前版本**尚未接到 CLI 或 `/verify` 端点**——即 Web 服务的「实时校验」校验的是**你粘贴进来的 AI 回答**，而不是自动调用模型生成后再校验。要跑通「端到端自动调模型并校验」，还需补一个 `verify_cli.py`（已列入路线图）。
+
+## 已知限制 / Known Limitations
+
+- **信任分级暂未启用**：Bench 在 v1.3 将 2327 个节点全部升为 `verified`，因此本产品的「Tier A 专家逐条签核 / Tier B 官方提取未签核」分级门禁当前恒为真、不呈现。产品核验的是**存在性 / 时效性 / 内容逐字一致性**，而非逐节点 provenance 分级。
+- **增值税法覆盖 38/41 条**（见上「数据覆盖说明」）。
+- **运行时依赖 Bench KB**（见上「运行时依赖说明」）。
+- 引注解析对「不含『条』字的引注」「英文法名」「嵌套书名号」等边界支持有限（已在改进路线图中）。
 
 ## 路线图
 

@@ -47,6 +47,15 @@ LAW_SCOPE = (
     "企业所得税法（2018年修正，2018-12-29施行）、个人所得税法（2018年修正，2019-01-01施行）"
 )
 
+# --- Known KB coverage gaps (honestly surfaced in the product UI) ---------- #
+# VAT_LAW currently holds 38 of the 41 articles of the public VAT law
+# (主席令第四十一号). Citations to articles 39–41 will resolve to NOT_FOUND
+# until the KB is completed. We disclose this rather than pretend full coverage.
+COVERAGE_CAVEATS = [
+    "增值税法（VAT_LAW）当前收录 38 / 41 条，第 39–41 条暂不可核验"
+    "（对这几条的引用会被判「未找到」）。",
+]
+
 # --- Domestic model registry (mirrors scripts/generate_answers.py) --------- #
 # All providers are OpenAI-compatible. API keys are read from the environment
 # (never hardcoded). A model with no key is skipped rather than failing.

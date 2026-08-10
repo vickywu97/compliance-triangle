@@ -104,13 +104,24 @@ def verify_answer(scenario_id: str, answer: str, as_of_date: str,
     counts = {GREEN: 0, YELLOW: 0, RED: 0}
     for it in items:
         counts[it["badge"]] += 1
+    if not items:
+        # P0-2 fix: an answer with no 《法律》第X条 citations is NOT a pass.
+        # Silently returning 🟢 here would let a vague, unverifiable answer
+        # get a green light — the exact failure mode this product exists to
+        # prevent. Report a neutral state instead.
+        overall = ("⚪ 未检测到法条引注，无法核验——回答中未包含《法律名称》第X条"
+                   "形式的引注。请确认 AI 输出是否标注了具体法条，否则本系统无从把关。")
+    elif counts[RED]:
+        overall = "🔴 存在未通过核验的引注，合规结论不可轻信"
+    elif counts[YELLOW]:
+        overall = "🟡 存在待人工复核的引述差异"
+    else:
+        overall = "🟢 全部引注通过核验"
     return {
         "scenario_id": scenario_id,
         "as_of": as_of_date,
         "items": items,
         "counts": counts,
-        "overall": ("🔴 存在未通过核验的引注，合规结论不可轻信"
-                    if counts[RED] else
-                    ("🟡 存在待人工复核的引述差异"
-                     if counts[YELLOW] else "🟢 全部引注通过核验")),
+        "has_citations": bool(items),
+        "overall": overall,
     }

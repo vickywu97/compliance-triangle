@@ -101,6 +101,13 @@ body { margin:0; font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe
 .err { background:#fee2e2; color:#dc2626; }
 .footnote p { font-size:13px; color:#475569; margin:6px 0; }
 .footnote .src { margin-top:12px; padding-top:12px; border-top:1px solid #e2e8f0; color:#64748b; }
+.notice { background:#fffbeb; border:1px solid #fcd34d; color:#92400e; padding:10px 14px;
+          border-radius:10px; font-size:13px; margin:10px 0 0; }
+.caveats { margin:10px 0 0; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0;
+           border-radius:10px; }
+.caveats b { color:#334155; }
+.caveats ul { margin:6px 0 0; padding-left:20px; }
+.caveats li { font-size:13px; color:#64748b; margin:3px 0; }
 code { background:#f1f5f9; padding:2px 6px; border-radius:6px; font-size:12px; }
 .hint { font-size:14px; color:#475569; margin:0 0 6px; }
 """
@@ -231,7 +238,8 @@ _TPL = """<!DOCTYPE html>
 <header class="hero"><div class="wrap">
   <h1>合规三角 <span class="sub">Compliance Triangle</span></h1>
   <p class="tag">法律合规 · 税务合规 · 知识产权合规 —— 同一套 verify 引擎，为 AI 生成的每条法条引注把关</p>
-  <p class="meta">基准库：<b>__KB_COUNT__</b> 部法已核验全文（源自 legal-hallucination-bench）｜ 引注核验：🟢通过 🟡待复核 🔴未通过</p>
+  <p class="meta">基准库：<b>__KB_ARTICLES__</b> 条已核验法条（<b>__KB_LAWS__</b> 部法，源自 legal-hallucination-bench）｜ 引注核验：🟢通过 🟡待复核 🔴未通过</p>
+  __NOTICE__
 </div></header>
 <main class="wrap">
   <section class="block"><h2>核验总览</h2><div id="dash"></div></section>
@@ -246,6 +254,7 @@ _TPL = """<!DOCTYPE html>
     <p>🟡 <b>待人工复核</b>：法条真实存在，但 AI 引述的措辞/但书与官方原文不一致，请人工比对。</p>
     <p>🔴 <b>未通过核验</b>：条文不存在/未生效，或引用了已废止法律——相关合规结论不可轻信。</p>
     <p class="src">本产品复用 <code>legal-hallucination-bench</code> 的 verify 引擎（同一套严格逐字内容策略），锚定 2327 条已核验法条全文。AI 可能编造法条，本系统负责拦截。</p>
+  __CAVEATS__
   </section>
 </main>
 <script>__JS__</script>
@@ -305,28 +314,52 @@ def build_memo_md(scenario: Dict, answer: str, result: Dict) -> str:
 
 
 # --- Self-contained HTML report -------------------------------------------- #
+def _esc(s: str) -> str:
+    return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def build_report_html(data: List[Dict], with_live: bool = True,
-                       kb_count: Optional[int] = None) -> str:
+                       kb_laws: Optional[int] = None,
+                       kb_articles: Optional[int] = None,
+                       notice: Optional[str] = None,
+                       caveats: Optional[List[str]] = None) -> str:
     """Build a self-contained, offline HTML report from ``data`` (list of
     ``{"scenario", "answer", "result"}``). No CDN/external resources.
+
+    ``kb_laws`` / ``kb_articles`` : honest KB size for the hero banner.
+    ``notice``  : an amber banner (e.g. KB not loaded) shown under the hero.
+    ``caveats`` : a list of honest data-coverage caveats shown in the footnote.
     """
     data_json = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     live_section = _LIVE_HTML if with_live else ""
+    notice_html = (f'<p class="notice">⚠️ {_esc(notice)}</p>' if notice else "")
+    caveats_html = ""
+    if caveats:
+        items = "".join(f"<li>{_esc(c)}</li>" for c in caveats)
+        caveats_html = (
+            '<div class="caveats"><b>数据覆盖说明（诚实披露）：</b>'
+            f'<ul>{items}</ul></div>'
+        )
     html = _TPL
     html = html.replace("__TITLE__", "合规三角 · 引注核验演示")
     html = html.replace("__CSS__", _CSS)
     html = html.replace("__JS__", _JS)
     html = html.replace("__DATA_JSON__", data_json)
     html = html.replace("__WITH_LIVE__", "true" if with_live else "false")
-    html = html.replace("__KB_COUNT__", str(kb_count if kb_count is not None else ""))
+    html = html.replace("__KB_LAWS__", str(kb_laws if kb_laws is not None else ""))
+    html = html.replace("__KB_ARTICLES__", str(kb_articles if kb_articles is not None else ""))
     html = html.replace("__LIVE_SECTION__", live_section)
+    html = html.replace("__NOTICE__", notice_html)
+    html = html.replace("__CAVEATS__", caveats_html)
     return html
 
 
 def write_report_html(data: List[Dict], out_path: str, with_live: bool = True,
-                       kb_count: Optional[int] = None) -> str:
+                       kb_laws: Optional[int] = None,
+                       kb_articles: Optional[int] = None) -> str:
     """Render and write the HTML report to ``out_path``; returns the path."""
-    html = build_report_html(data, with_live=with_live, kb_count=kb_count)
+    html = build_report_html(data, with_live=with_live,
+                             kb_laws=kb_laws, kb_articles=kb_articles)
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
     return out_path

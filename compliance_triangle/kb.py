@@ -13,6 +13,33 @@ from .config import ensure_bench_importable
 _laws_cache: Optional[Dict] = None
 
 
+def distinct_laws(laws: Dict) -> list:
+    """``laws`` is keyed by name/code/alias, so ``len(laws)`` overcounts.
+    Collapse to the distinct underlying ``Law`` objects."""
+    return list({id(v): v for v in laws.values()}.values())
+
+
+def count_laws(laws: Dict) -> int:
+    """Number of distinct laws (not resolution keys)."""
+    return len(distinct_laws(laws))
+
+
+def count_articles(laws: Dict) -> int:
+    """Total number of distinct articles across all laws.
+
+    Articles live under ``law.revisions[].articles`` (one snapshot per
+    effective date). We take the union of article keys per law so temporal
+    revisions don't double-count.
+    """
+    total = 0
+    for law in distinct_laws(laws):
+        keys = set()
+        for rev in law.revisions.values():
+            keys.update(rev.articles.keys())
+        total += len(keys)
+    return total
+
+
 def load_kb() -> Dict:
     """Load all verified laws from the Bench repo. Cached for the process."""
     global _laws_cache

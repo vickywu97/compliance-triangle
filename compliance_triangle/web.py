@@ -25,10 +25,25 @@ from compliance_triangle.verify_integration import verify_answer
 from compliance_triangle.memo import build_report_html
 from compliance_triangle.runner import build_demo_data
 
-config.ensure_bench_importable()
-LAWS = kb.load_kb()
-DEMO_DATA = build_demo_data(LAWS)
-KB_COUNT = len(LAWS)
+# Load the Bench KB at startup, but NEVER let a missing Bench repo crash the
+# whole server. If the KB can't be found, we still serve the (empty) offline
+# showcase with a clear notice, and /verify returns 503 instead of 500.
+KB_AVAILABLE = True
+KB_ERROR = ""
+LAWS = None
+DEMO_DATA = []
+KB_LAW_COUNT = 0
+KB_ARTICLE_COUNT = 0
+try:
+    config.ensure_bench_importable()
+    LAWS = kb.load_kb()
+    DEMO_DATA = build_demo_data(LAWS)
+    # LAWS is keyed by name/code/alias, so len(LAWS) is NOT the law count.
+    KB_LAW_COUNT = kb.count_laws(LAWS)
+    KB_ARTICLE_COUNT = kb.count_articles(LAWS)
+except Exception as e:  # noqa: BLE001 - bench missing must not crash the server
+    KB_AVAILABLE = False
+    KB_ERROR = str(e)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -44,7 +59,16 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         p = urlparse(self.path).path
         if p in ("/", "/index.html"):
-            html = build_report_html(DEMO_DATA, with_live=True, kb_count=KB_COUNT)
+            notice = None
+            if not KB_AVAILABLE:
+                notice = ("基准库 legal-hallucination-bench 未加载，展示页为离线结构；"
+                          "实时校验 /verify 暂不可用。请克隆同级仓库或设置环境变量 "
+                          "COMPLIANCE_TRIANGLE_BENCH 指向它。")
+            html = build_report_html(DEMO_DATA, with_live=KB_AVAILABLE,
+                                     kb_laws=KB_LAW_COUNT,
+                                     kb_articles=KB_ARTICLE_COUNT,
+                                     notice=notice,
+                                     caveats=config.COVERAGE_CAVEATS)
             self._send(200, html)
         else:
             self._send(404, "Not Found")
@@ -52,6 +76,11 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         p = urlparse(self.path).path
         if p == "/verify":
+            if not KB_AVAILABLE:
+                self._send(503, json.dumps(
+                    {"error": f"基准库未加载，无法核验：{KB_ERROR}"}, ensure_ascii=False),
+                    "application/json; charset=utf-8")
+                return
             try:
                 length = int(self.headers.get("Content-Length", 0))
                 raw = self.rfile.read(length) if length else b"{}"

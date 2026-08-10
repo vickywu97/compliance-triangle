@@ -29,7 +29,10 @@ def main() -> int:
     os.makedirs(out_dir, exist_ok=True)
 
     laws = kb.load_kb()
-    print(f"[kb ] loaded {len(laws)} laws from legal-hallucination-bench")
+    kb_law_count = kb.count_laws(laws)
+    kb_article_count = kb.count_articles(laws)
+    print(f"[kb ] loaded {kb_law_count} laws / {kb_article_count} articles "
+          f"from legal-hallucination-bench")
 
     total = {"🟢": 0, "🟡": 0, "🔴": 0}
     print("\n=== 合规三角 · 离线演示（引注核验） ===\n")
@@ -48,7 +51,8 @@ def main() -> int:
 
     # Self-contained static HTML showcase (double-click to open, no server)
     html_path = os.path.join(out_dir, "index.html")
-    write_report_html(demo_data, html_path, with_live=False, kb_count=len(laws))
+    write_report_html(demo_data, html_path, with_live=False,
+                     kb_laws=kb_law_count, kb_articles=kb_article_count)
     print(f"\n[html] 静态展示页 -> {html_path}")
 
     print(f"\n[sum] 🟢{total['🟢']} 🟡{total['🟡']} 🔴{total['🔴']} "
