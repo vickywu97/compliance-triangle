@@ -28,10 +28,23 @@
 2. 打开 <https://www.linkedin.com> → 首页 "Start a post" → 粘贴。
 3. 自带 hashtag 已写好，直接发布。复制帖子链接备用。
 
-## 动作四：录演示视频（约 10 分钟）
-1. 打开 `docs/SCREENCAST_SCRIPT.md`，按"逐句旁白 + 点击路径"录 2–3 分钟。
-2. 建议 macOS 自带 **QuickTime Player → 新建屏幕录制**（菜单栏文件→新建屏幕录制）。
-3. 导出 mp4。可嵌进 README 顶部，或发视频号 / B 站。
+## 动作四：录演示视频（约 10 分钟，**无需旁白，我来加字幕**）
+1. 打开 `docs/SCREENCAST_SCRIPT.md`，按"点击路径 + 画面动作"录 2–3 分钟；**不需要开麦克风，不需要说话**。
+2. 建议按脚本的 5 个步骤分段录制，保存为：
+   - `compliance-triangle/demo/raw/step1.mov`（开场）
+   - `compliance-triangle/demo/raw/step2.mov`（启动 + 看演示场景）
+   - `compliance-triangle/demo/raw/step3.mov`（核心：粘贴 AI 回答并校验）
+   - `compliance-triangle/demo/raw/step4.mov`（可选：调模型生成并校验）
+   - `compliance-triangle/demo/raw/step5.mov`（收尾）
+   - 格式 `.mov` 或 `.mp4` 均可；顺序由文件名数字决定。
+3. 把原始片段放进 `demo/raw/` 后告诉我，我运行：
+   ```bash
+   cd /Users/vickywu/WorkBuddy/2026-07-26-16-50-27/compliance-triangle
+   /Users/vickywu/.workbuddy/binaries/python/versions/3.13.12/bin/python3 scripts/make_screencast.py
+   ```
+4. 我会自动加片头/片尾 + 中文字幕，输出 `demo/screencast_subtitled.mp4`，你预览后我迭代。
+
+> 想改字幕文案？在 `demo/raw/captions.json` 里按顺序写 5 条，再运行脚本即可。
 
 ---
 

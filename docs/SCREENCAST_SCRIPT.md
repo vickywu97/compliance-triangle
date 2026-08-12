@@ -3,7 +3,9 @@
 > 用途：照着这份脚本录一段 2–3 分钟的演示视频，放进 GitHub README / 作品集 / 面试附件。
 > 目标观众：AI 法律产品 / 合规岗的 hiring manager。核心要让他们 30 秒内看懂——
 > **"这个产品能拦住 AI 编造的法条引注，并用 🟢🟡🔴 标出来"**。
-> 录制建议：1080p，区域录制浏览器 + 终端即可，无需露脸。语速放慢，关键结论重复一遍。
+> 录制建议：1080p，区域录制浏览器 + 终端即可，**无需露脸、无需麦克风、无需说话**。录制完成后由 `scripts/make_screencast.py` 自动加片头/片尾和中文字幕。为让字幕同步最精准，建议按下面 5 个步骤分段录，分别保存为 `step1.mov` … `step5.mov`。
+>
+> 每段中的「旁白」会作为该段的 on-screen 字幕出现，你不需要念出来。
 
 ---
 
@@ -92,5 +94,13 @@ python -m compliance_triangle.web
 ## 录制小贴士
 - 粘贴那段"含幻觉文本"**提前存剪贴板**，录的时候直接 Cmd+V，避免现场打字出错。
 - 如果终端启动报"基准库未加载"，先 `git clone` bench 为同级目录（README 快速开始有写）。
-- 录完可压缩成 GIF 或 MP4，嵌进 README 顶部；也可以只截几张关键帧配文字。
-- 不想录屏也行：直接把 `demo/output/index.html` 双击打开的静态页截图，配一段 30 秒讲解语音。
+- 每录完一段检查一下：是否包含该步骤该展示的画面（如 step3 必须出现校验结果里的 🟢/🔴 徽章）。
+
+## 交片流程
+1. 把 5 个原始片段放到 `compliance-triangle/demo/raw/`。
+2. 在终端运行：
+   ```bash
+   cd /Users/vickywu/WorkBuddy/2026-07-26-16-50-27/compliance-triangle
+   /Users/vickywu/.workbuddy/binaries/python/versions/3.13.12/bin/python3 scripts/make_screencast.py
+   ```
+3. 产物在 `compliance-triangle/demo/screencast_subtitled.mp4`。预览后如要改字幕时机/文案，把修改意见发给我即可迭代。
