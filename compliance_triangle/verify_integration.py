@@ -29,10 +29,17 @@ def verify_citation_item(law_name: str, article_no: str, quoted: str,
 
     res = kb.resolve(law_name, article_no, as_of_date, laws)
 
+    # Canonical (display) name for the "by law" distribution: merge different
+    # name forms of the same statute (公司法 / 中华人民共和国公司法 / 旧公司法)
+    # into ONE row so the breakdown stays readable.
+    _canon = kb.normalize_law_name(laws, res.law_name or law_name)
+    law_canonical = laws[_canon].name if _canon in laws else _canon
+
     # --- 🔴 temporal hallucination: cited a repealed law name ------------- #
     if res.used_deprecated_alias:
         return {
-            "raw_law": law_name, "article_no": article_no, "quoted": quoted, "badge": RED,
+            "raw_law": law_name, "article_no": article_no, "law_canonical": law_canonical,
+            "quoted": quoted, "badge": RED,
             "status": "TEMPORAL_DEPRECATED",
             "note": f"引用了已废止法律「{law_name}」（{res.deprecated_repealed_date} 已废止），"
                     f"现行有效法律为 {res.law_name or '对应新法'}。",
@@ -45,7 +52,8 @@ def verify_citation_item(law_name: str, article_no: str, quoted: str,
         if res.note == "UNKNOWN_LAW":
             note = f"无法识别的法律名「{law_name}」"
         return {
-            "raw_law": law_name, "article_no": article_no, "quoted": quoted, "badge": RED,
+            "raw_law": law_name, "article_no": article_no, "law_canonical": law_canonical,
+            "quoted": quoted, "badge": RED,
             "status": "NOT_FOUND", "note": note,
             "ground_truth": "", "as_of": as_of_date,
         }
@@ -53,7 +61,8 @@ def verify_citation_item(law_name: str, article_no: str, quoted: str,
     # --- provenance gate (kept for safety; all 2327 nodes are verified) --- #
     if res.verification_status != "verified":
         return {
-            "raw_law": res.law_name, "article_no": article_no, "quoted": quoted, "badge": RED,
+            "raw_law": res.law_name, "article_no": article_no, "law_canonical": law_canonical,
+            "quoted": quoted, "badge": RED,
             "status": "UNVERIFIABLE",
             "note": "该条文节点未经专家核验，暂不能作为判分基准（需人工核验）。",
             "ground_truth": "", "as_of": as_of_date,
@@ -64,7 +73,8 @@ def verify_citation_item(law_name: str, article_no: str, quoted: str,
     if not quoted:
         # No quoted text to compare -> existence check only -> 🟢
         return {
-            "raw_law": res.law_name, "article_no": article_no, "quoted": quoted, "badge": GREEN,
+            "raw_law": res.law_name, "article_no": article_no, "law_canonical": law_canonical,
+            "quoted": quoted, "badge": GREEN,
             "status": "OK",
             "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。",
             "ground_truth": gt, "as_of": as_of_date,
@@ -73,7 +83,8 @@ def verify_citation_item(law_name: str, article_no: str, quoted: str,
     d = content_diff(quoted, gt)
     if d.level == "EXACT":
         return {
-            "raw_law": res.law_name, "article_no": article_no, "quoted": quoted, "badge": GREEN,
+            "raw_law": res.law_name, "article_no": article_no, "law_canonical": law_canonical,
+            "quoted": quoted, "badge": GREEN,
             "status": "OK",
             "note": "引述内容与官方条文逐字一致。",
             "ground_truth": gt, "as_of": as_of_date,
@@ -81,7 +92,8 @@ def verify_citation_item(law_name: str, article_no: str, quoted: str,
     # non-exact: article is real, but the quoted wording diverges -> 🟡
     cov = d.cov
     return {
-        "raw_law": res.law_name, "article_no": article_no, "quoted": quoted, "badge": YELLOW,
+        "raw_law": res.law_name, "article_no": article_no, "law_canonical": law_canonical,
+        "quoted": quoted, "badge": YELLOW,
         "status": "PARTIAL" if cov >= 0.5 else "FABRICATED",
         "note": (f"法条真实存在，但引述内容与官方条文不一致"
                  f"（子句覆盖率 {cov:.0%}）。可能为概括/意译或遗漏但书，请人工复核。"),

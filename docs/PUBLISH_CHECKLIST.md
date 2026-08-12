@@ -1,13 +1,14 @@
 # 对外发布清单 · 合规三角 v1.0.0
 
-> 目标：把"已发 GitHub Release 的合规三角"扩散到公众号 / 脉脉 / LinkedIn，并补一段演示录屏。
+> 目标：把"已发 GitHub Release 的合规三角"扩散到公众号 / 脉脉 / LinkedIn。
 > 所有文案与脚本已在仓库里，**你只需复制 + 粘贴 + 点发布**，不用再写任何字。
+> （演示录屏**非必需**——README 已嵌入 `dashboard_preview.png` 静态预览图，足够展示产品形态。）
 
 ## 前置（已就绪，确认即可）
 - [x] GitHub Release `v1.0.0` 已发（compliance-triangle）
 - [x] 三平台文案已写好并 push：`docs/LAUNCH_POSTS.md`（公众号 / LinkedIn / 脉脉三节）
-- [x] 演示录屏脚本已写好：`docs/SCREENCAST_SCRIPT.md`
 - [x] VAT 38/41 诚实声明已 push（legal-hallucination-bench `cad2fec`）
+- [x] 预览图 `docs/dashboard_preview.png` 已生成（README 顶部嵌入，替代录屏）
 
 ---
 
@@ -28,30 +29,15 @@
 2. 打开 <https://www.linkedin.com> → 首页 "Start a post" → 粘贴。
 3. 自带 hashtag 已写好，直接发布。复制帖子链接备用。
 
-## 动作四：录演示视频（约 10 分钟，**无需旁白，我来加字幕**）
-1. 打开 `docs/SCREENCAST_SCRIPT.md`，按"点击路径 + 画面动作"录 2–3 分钟；**不需要开麦克风，不需要说话**。
-2. 建议按脚本的 5 个步骤分段录制，保存为：
-   - `compliance-triangle/demo/raw/step1.mov`（开场）
-   - `compliance-triangle/demo/raw/step2.mov`（启动 + 看演示场景）
-   - `compliance-triangle/demo/raw/step3.mov`（核心：粘贴 AI 回答并校验）
-   - `compliance-triangle/demo/raw/step4.mov`（可选：调模型生成并校验）
-   - `compliance-triangle/demo/raw/step5.mov`（收尾）
-   - 格式 `.mov` 或 `.mp4` 均可；顺序由文件名数字决定。
-3. 把原始片段放进 `demo/raw/` 后告诉我，我运行：
-   ```bash
-   cd /Users/vickywu/WorkBuddy/2026-07-26-16-50-27/compliance-triangle
-   /Users/vickywu/.workbuddy/binaries/python/versions/3.13.12/bin/python3 scripts/make_screencast.py
-   ```
-4. 我会自动加片头/片尾 + 中文字幕，输出 `demo/screencast_subtitled.mp4`，你预览后我迭代。
-
-> 想改字幕文案？在 `demo/raw/captions.json` 里按顺序写 5 条，再运行脚本即可。
+## 动作四：演示视频（**可选，不做也完全可以**）
+README 顶部已经嵌入 `dashboard_preview.png`（真实数据绘制的预览图），足以让访客一眼看懂产品形态，**本期不要求录屏**。
+如果以后想录：脚本 `docs/SCREENCAST_SCRIPT.md` + 自动加字幕 `scripts/make_screencast.py` 已备好，随时可录——**但无需旁白**，录完交给我自动剪辑配字幕即可。
 
 ---
 
 ## 收尾：形成闭环
 - 每发完一条，把链接贴回三个仓库 README 的「作品集联动」区。
   - 你只要把链接发给我，我帮你加区块并 push（compliance-triangle / legal-hallucination-bench / vickywu97-profile 三处）。
-- 演示视频链接也可一并放进 README。
 
 ## 数据口径提醒（给复核用）
 - 文案中的数字（最优模型最宽松尺度 **33%** 引注幻觉、严格逐字 **8 法域 0%**、KB **2327 条 / 8 部法**）

@@ -62,6 +62,17 @@ class TestVerifyAnswer(unittest.TestCase):
         r = verify_answer("T", "依据《增值税法》第40条。", "2026-08-01", self.LAWS)
         self.assertEqual(r["items"][0]["badge"], "🔴")
 
+    def test_law_canonical_merges_name_forms(self):
+        # 公司法 / 中华人民共和国公司法 / 旧公司法 must collapse to ONE row
+        # in the "by law" distribution (law_canonical field).
+        ans = ("依据《公司法》第15条、《中华人民共和国公司法》第142条、"
+               "《旧公司法》第16条。")
+        r = verify_answer("T", ans, "2025-01-01", self.LAWS)
+        canon = {it["law_canonical"] for it in r["items"]}
+        # 公司法 + 中华人民共和国公司法 -> 中华人民共和国公司法 (1 row);
+        # 旧公司法 -> 中华人民共和国公司法 (groups under the current law)
+        self.assertEqual(canon, {"中华人民共和国公司法"})
+
 
 if __name__ == "__main__":
     unittest.main()

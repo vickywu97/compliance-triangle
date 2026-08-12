@@ -131,7 +131,7 @@ function bar(label,n,p,k){ return '<div class="bar"><div class="blabel"><span>'+
 function renderSummary(){
   var g=0,y=0,r=0; var law={};
   DATA.forEach(function(d){ var c=d.result.counts; g+=c['🟢']||0; y+=c['🟡']||0; r+=c['🔴']||0;
-    d.result.items.forEach(function(it){ var k=it.raw_law; if(!law[k]) law[k]={g:0,y:0,r:0};
+    d.result.items.forEach(function(it){ var k=it.law_canonical||it.raw_law; if(!law[k]) law[k]={g:0,y:0,r:0};
       law[k][badgeKey(it.badge)]++; }); });
   var total=g+y+r; var pct=function(n){ return total?Math.round(n/total*100):0; };
   var bars=bar('🟢 已核验通过',g,pct(g),'g')+bar('🟡 待人工复核',y,pct(y),'y')+
