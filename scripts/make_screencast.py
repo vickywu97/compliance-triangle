@@ -33,13 +33,14 @@ from typing import List, Tuple
 # They fit on a single line in the lower-third of the screen.
 # NOTE: emojis like 🟢🟡🔴 do NOT render in this ffmpeg build's drawtext,
 # so we use plain text equivalents in video captions.
+# Captions are aligned 1:1 with the recorded clips step1..step5
+# (see docs/SCREENCAST_SCRIPT.md). The end card uses END_TEXT/END_SUB.
 DEFAULT_CAPTIONS = [
     "律师·税务师·专利代理师 → AI 法律产品",
-    "合规三角：给 AI 每条法条引注做三层校验",
-    "本地零依赖启动 | 5 个含幻觉演示场景",
-    "粘贴 LLM 回答 → 运行校验 → 核对官方法条库",
+    "本地零依赖启动 | 内置 5 个含幻觉演示场景",
+    "粘贴 LLM 回答 → 运行校验 → 逐条核对官方法条库",
     "输入场景 → 调国产模型生成 → 自动校验",
-    "底层 2327 条核验法条 · 32 测试全绿 · 开源",
+    "地基 2327 条核验法条 · 32 测试全绿 · 开源",
 ]
 
 TITLE_TEXT = "合规三角 v1.0.0 演示"
