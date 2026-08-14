@@ -8,7 +8,7 @@
 > 🚀 **在线体验（自包含静态页）**：`demo/output/index.html` 双击即用（无需安装/联网）。也可部署为永久公开链接：
 > - **GitHub Pages**：仓库 Settings → Pages → Source 选 `Deploy from a branch` → `master` 分支、`/demo/output` 目录。启用后地址为 **https://vickywu97.github.io/compliance-triangle/** 。
 > - 其他静态托管（Vercel / Netlify / Cloudflare Pages）直接上传 `demo/output/index.html` 即可。
-> 本地服务：`python3 -m compliance_triangle.web`（需同级 Bench KB）。
+> 本地服务：`python3 -m compliance_triangle.web`（优先用同级 Bench KB；单独 clone 时自动降级为内置 vendor 快照）。
 
 ---
 
@@ -41,7 +41,7 @@
 - **校验引擎**：直接复用 `benchmark/verify.py` 的 `resolve_article` + `content_diff`，与基准共用「来源可信度门禁」。
 - **LLM 接入**：`compliance_triangle/llm_adapter.py`（5 个国产模型 OpenAI 兼容层，密钥走环境变量）。
 
-> **运行时依赖说明（诚实）**：本仓库**运行期**依赖同级 `legal-hallucination-bench` 的法条 KB（通过 `COMPLIANCE_TRIANGLE_BENCH` 环境变量或同级目录解析）。所谓「离线零依赖」严格成立的是**预生成的静态展示页** `demo/output/index.html`（双击即用、不连任何服务）；而 `python -m compliance_triangle.web` 与 `demo/run_demo.py` 在启动时需加载该 KB。若 KB 缺失，服务不会崩溃，而是降级展示离线结构并让 `/verify` 返回 503 明确提示。
+> **运行时依赖说明（诚实）**：本仓库运行期优先读取同级 `legal-hallucination-bench` 的法条 KB（通过 `COMPLIANCE_TRIANGLE_BENCH` 环境变量或同级目录解析），以获得最新数据；**同时内嵌一份 vendor 快照**（`compliance_triangle/vendor/bench_kb/`，2327 节点 / 8 部法），因此即使单独 clone compliance-triangle 也能直接运行。所谓「离线零依赖」严格成立的是**预生成的静态展示页** `demo/output/index.html`（双击即用、不连任何服务）。
 
 > **数据覆盖说明（诚实）**：增值税法（VAT_LAW）共 **38 条**（主席令第四十一号公布，2026-01-01 施行——"41" 是**公布令号**，并非条文数），KB 已全数逐字核验，无缺漏。8 部法均为完整官方全文。
 

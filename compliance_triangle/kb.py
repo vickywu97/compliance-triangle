@@ -1,8 +1,10 @@
 """Knowledge-base access — a thin, import-safe wrapper over the Bench loader.
 
 The Bench repo is imported lazily (only when actually loading), so importing
-this module never fails even if the Bench path is misconfigured — the error
-surfaces at call time with a clear message.
+this module never fails even if the Bench path is misconfigured — the loader
+falls back to a vendored snapshot bundled under ``compliance_triangle/vendor/bench_kb``.
+This lets compliance-triangle run standalone (e.g. when cloned by itself) while
+still preferring the freshest Bench KB when it is available.
 """
 from __future__ import annotations
 
@@ -11,6 +13,7 @@ from typing import Dict, Optional
 from .config import ensure_bench_importable
 
 _laws_cache: Optional[Dict] = None
+_kb_source: str = ""
 
 
 def distinct_laws(laws: Dict) -> list:
@@ -40,14 +43,47 @@ def count_articles(laws: Dict) -> int:
     return total
 
 
-def load_kb() -> Dict:
-    """Load all verified laws from the Bench repo. Cached for the process."""
-    global _laws_cache
-    if _laws_cache is None:
+def _load_bench_kb() -> Optional[Dict]:
+    """Try to load from the real legal-hallucination-bench repo."""
+    try:
         ensure_bench_importable()
+    except Exception:
+        return None
+    try:
         from knowledge_base.loader import load_laws
-        _laws_cache = load_laws()
+        return load_laws()
+    except Exception:
+        return None
+
+
+def _load_vendored_kb() -> Dict:
+    """Load from the bundled fallback snapshot."""
+    from .vendor.bench_kb import load_laws
+    return load_laws()
+
+
+def load_kb() -> Dict:
+    """Load all verified laws. Cached for the process.
+
+    Prefers the real Bench repo; falls back to a vendored snapshot so the
+    product works when cloned standalone.
+    """
+    global _laws_cache, _kb_source
+    if _laws_cache is None:
+        laws = _load_bench_kb()
+        if laws is not None:
+            _laws_cache = laws
+            _kb_source = "bench"
+        else:
+            _laws_cache = _load_vendored_kb()
+            _kb_source = "vendored"
     return _laws_cache
+
+
+def kb_source() -> str:
+    """Return which source the cached KB came from (``bench`` or ``vendored``)."""
+    load_kb()
+    return _kb_source
 
 
 def normalize_law_name(laws: Dict, raw_name: str) -> str:
@@ -72,15 +108,20 @@ def resolve(law_name: str, article_no: str, as_of_date: str, laws: Dict):
 
     Routes a Chinese law name to its code for current-law lookups, but passes
     a *deprecated* law name (e.g. 旧公司法 / 合同法) through unchanged so the
-    Bench resolver can flag it as a temporal hallucination.
+    resolver can flag it as a temporal hallucination.
 
     Returns a ``ResolveResult`` with ``found``, ``used_deprecated_alias``,
     ``deprecated_repealed_date``, ``content``, ``verification_status`` and
     ``note``.
     """
-    ensure_bench_importable()
-    from benchmark.extract import DEPRECATED_LAW_NAMES
-    from knowledge_base.loader import resolve_article
+    # Prefer the real Bench resolver; fall back to the vendored one.
+    try:
+        ensure_bench_importable()
+        from benchmark.extract import DEPRECATED_LAW_NAMES
+        from knowledge_base.loader import resolve_article
+    except Exception:
+        from .vendor.bench_kb.extract import DEPRECATED_LAW_NAMES
+        from .vendor.bench_kb.loader import resolve_article
 
     if law_name in DEPRECATED_LAW_NAMES:
         # Pass the deprecated name verbatim so the resolver flags it.
