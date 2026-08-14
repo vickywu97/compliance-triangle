@@ -1,12 +1,14 @@
 # 合规三角 · Compliance Triangle
 
+> 🌏 English version: [README_EN.md](./README_EN.md).
+
 > 企业三域合规助手（法律合规 · 税务合规 · 知识产权合规），由**同一人**——律师 / 税务师 / 专利代理师——签字背书。
 > 所有 AI 生成的法条引注都经过**存在性 / 时效性 / 内容匹配**三层校验，不过门禁的红框标出。
 
-> 📦 **双仓库作品集 · 产品篇** —— 地基是 [`legal-hallucination-bench`](https://github.com/vickywu97/legal-hallucination-bench)（量化"AI 法律引注幻觉"的离线基准）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md)。
+> 📦 **双仓库作品集 · 产品篇** —— 地基是 [`legal-hallucination-bench`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench)（量化"AI 法律引注幻觉"的离线基准）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md)。
 
 > 🚀 **在线体验（自包含静态页）**：`demo/output/index.html` 双击即用（无需安装/联网）。也可部署为永久公开链接：
-> - **GitHub Pages**：仓库 Settings → Pages → Source 选 `Deploy from a branch` → `master` 分支、`/demo/output` 目录。启用后地址为 **https://vickywu97.github.io/compliance-triangle/** 。
+> - **GitHub Pages**：仓库 Settings → Pages → Source 选 `Deploy from a branch` → `master` 分支、`/demo/output` 目录。启用后地址为 **https://vickywu97.github.io/compliance-triangle/** （注意：需先启用才会生效；且该 `github.io` 地址在中国大陆通常不可达，建议同时保留 `demo/output/index.html` 离线文件供直接打开）。
 > - 其他静态托管（Vercel / Netlify / Cloudflare Pages）直接上传 `demo/output/index.html` 即可。
 > 本地服务：`python3 -m compliance_triangle.web`（优先用同级 Bench KB；单独 clone 时自动降级为内置 vendor 快照）。
 
@@ -14,7 +16,7 @@
 
 ## 产品叙事（作品集核心）
 
-我先用量化基准 [`legal-hallucination-bench`](https://github.com/vickywu97/legal-hallucination-bench)
+我先用量化基准 [`legal-hallucination-bench`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench)
 **证明了 AI 在法律引注上不可信**（5 模型 HVI 33.3%–54.2%，8 法域逐字 EXACT 合规率全为 0%）；
 然后用**同一套 verify 引擎**构建了合规三角——让 AI 生成的每条法条引注都经过校验，
 **不过门禁的红框标出**。这不是「会用 AI」，而是「知道 AI 哪里会出错，并设计了系统来防止」。
@@ -46,7 +48,7 @@
 > **数据覆盖说明（诚实）**：增值税法（VAT_LAW）共 **38 条**（主席令第四十一号公布，2026-01-01 施行——"41" 是**公布令号**，并非条文数），KB 已全数逐字核验，无缺漏。8 部法均为完整官方全文。
 
 > 与地基仓库的"地基 → 产品"关系图：
-> ![作品集架构](https://raw.githubusercontent.com/vickywu97/legal-hallucination-bench/master/docs/portfolio_architecture.svg)
+> ![作品集架构](./docs/portfolio_architecture.svg)
 
 ## 免责声明
 > ⚠️ 本工具（合规三角）仅对 AI 生成的法条引注做**存在性 / 时效性 / 内容匹配**的自动化校验，**不构成法律意见、税务意见或专利意见**，也不能替代执业律师、税务师、专利代理师的专业判断。校验结果（🟢🟡🔴）仅反映引注与官方法条文本的匹配情况，不保证任何合规结论的正确性或适用性；使用者应就具体事项咨询持证专业人士。工具引用的法条文本来自公开官方来源，评测结论为自动化判分结果，可能因法条更新或提取误差存在偏差，请以官方最新公布文本为准。
@@ -55,6 +57,7 @@
 
 ```bash
 # 1) 把 Bench 仓库作为同级目录克隆（或设置环境变量指向它）
+#    注：Bench 为私有仓库，需先获授权并配置 Git 凭证（SSH 或 token）才能克隆
 git clone https://github.com/vickywu97/legal-hallucination-bench.git ../legal-hallucination-bench
 
 # 2) 离线演示（无需 API Key / 网络）：跑 5 个内置场景，生成合规备忘录 + 静态展示页
