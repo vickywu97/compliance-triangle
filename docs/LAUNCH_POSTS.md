@@ -4,7 +4,7 @@
 > 三版已按平台调性写好的，复制即用。数据口径与 `README.md` / `CHANGELOG.md` 一致。
 > 仓库链接：
 > - 产品：[github.com/vickywu97/compliance-triangle](https://github.com/vickywu97/compliance-triangle)
-> - 地基：[github.com/vickywu97/legal-hallucination-bench](https://github.com/vickywu97/legal-hallucination-bench)
+> - 地基：[github.com/vickywu97/legal-hallucination-bench（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench)
 
 ---
 
@@ -38,7 +38,7 @@
 我觉得这正是 AI 法律产品岗最该具备的能力。
 
 仓库在这 👉 [github.com/vickywu97/compliance-triangle](https://github.com/vickywu97/compliance-triangle)
-（同名地基仓库 [legal-hallucination-bench](https://github.com/vickywu97/legal-hallucination-bench)）
+（同名地基仓库 [legal-hallucination-bench（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench)）
 
 ---
 
@@ -64,7 +64,7 @@ Why this matters for an AI legal / compliance role: it's not "I can use AI" — 
 
 Repos:
 - 🛡️ https://github.com/vickywu97/compliance-triangle
-- 🧱 https://github.com/vickywu97/legal-hallucination-bench
+- 🧱 https://github.com/vickywu97/legal-hallucination-bench（私有仓库 · 需授权访问）
 
 #AILaw #LegalTech #ProductManagement #Compliance #LLMEvaluation
 
@@ -87,7 +87,7 @@ Repos:
 三证合一（律师+税务师+专利代理师）是我做这件事的护城河：同一人定义陷阱、签每条 KB、设计校验规则。
 
 产品仓 👉 github.com/vickywu97/compliance-triangle
-地基仓 👉 github.com/vickywu97/legal-hallucination-bench
+地基仓 👉 github.com/vickywu97/legal-hallucination-bench（私有仓库 · 需授权访问）
 
 欢迎 AI 法律 / 合规方向的团队交流 🙌
 
