@@ -47,13 +47,13 @@ LAW_SCOPE = (
     "企业所得税法（2018年修正，2018-12-29施行）、个人所得税法（2018年修正，2019-01-01施行）"
 )
 
-# --- Known KB coverage gaps (honestly surfaced in the product UI) ---------- #
-# VAT_LAW currently holds 38 of the 41 articles of the public VAT law
-# (主席令第四十一号). Citations to articles 39–41 will resolve to NOT_FOUND
-# until the KB is completed. We disclose this rather than pretend full coverage.
+# --- Known KB coverage (honestly surfaced in the product UI) -------------- #
+# The public VAT Law (《增值税法》) has 38 articles total, promulgated by
+# 主席令第四十一号 — that "41" is the promulgation ORDER number, NOT the
+# article count. All 38 are verified in the KB; the 8 laws are complete.
+# (Earlier versions wrongly claimed "38/41, articles 39-41 missing" — corrected.)
 COVERAGE_CAVEATS = [
-    "增值税法（VAT_LAW）当前收录 38 / 41 条，第 39–41 条暂不可核验"
-    "（对这几条的引用会被判「未找到」）。",
+    "全部 8 部法（含《增值税法》38 条）均已逐字核验，无缺漏。",
 ]
 
 # --- English law-name aliases (real-world LLM outputs may use English) ------ #

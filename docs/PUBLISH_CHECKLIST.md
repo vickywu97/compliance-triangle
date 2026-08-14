@@ -7,7 +7,7 @@
 ## 前置（已就绪，确认即可）
 - [x] GitHub Release `v1.0.0` 已发（compliance-triangle）
 - [x] 三平台文案已写好并 push：`docs/LAUNCH_POSTS.md`（公众号 / LinkedIn / 脉脉三节）
-- [x] VAT 38/41 诚实声明已 push（legal-hallucination-bench `cad2fec`）
+- [x] VAT 覆盖声明已 push —— **已更正为 38/38**（原「38/41，缺 39–41 条」系误读公布令号，见 CHANGELOG Unreleased）
 - [x] 预览图 `docs/dashboard_preview.png` 已生成（README 顶部嵌入，替代录屏）
 
 ---
@@ -42,4 +42,4 @@ README 顶部已经嵌入 `dashboard_preview.png`（真实数据绘制的预览�
 ## 数据口径提醒（给复核用）
 - 文案中的数字（最优模型最宽松尺度 **33%** 引注幻觉、严格逐字 **8 法域 0%**、KB **2327 条 / 8 部法**）
   与 `legal-hallucination-bench/README.md` 及 `CHANGELOG.md` 一致，源自真实评测报告，非杜撰。
-- 增值税法 **38/41 条**已在 bench README 诚实标注，文案未夸大覆盖。
+- 增值税法口径已统一为 **38/38**（"主席令第四十一号" 是公布令号，非条文数），KB / 本仓库 README / config 三处一致，文案未夸大覆盖。

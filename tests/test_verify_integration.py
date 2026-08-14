@@ -58,7 +58,8 @@ class TestVerifyAnswer(unittest.TestCase):
         self.assertIn(r["items"][0]["status"], ("PARTIAL", "FABRICATED"))
 
     def test_vat_coverage_gap_is_honest(self):
-        # VAT_LAW holds 38/41; article 40 should resolve to NOT_FOUND (disclosed)
+        # VAT_LAW has 38 articles (主席令第四十一号 is the order number, not the count);
+        # citing 第40条 (out of range, law ends at 38) correctly resolves to NOT_FOUND.
         r = verify_answer("T", "依据《增值税法》第40条。", "2026-08-01", self.LAWS)
         self.assertEqual(r["items"][0]["badge"], "🔴")
 

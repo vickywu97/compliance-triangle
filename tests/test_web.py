@@ -47,8 +47,8 @@ class TestRender(unittest.TestCase):
 
     def test_caveats_rendered(self):
         html = build_report_html(self._data(), with_live=False,
-                                 caveats=["增值税法 38/41 条说明"])
-        self.assertIn("增值税法 38/41 条说明", html)
+                                 caveats=["全部 8 部法（含《增值税法》38 条）均已逐字核验，无缺漏。"])
+        self.assertIn("《增值税法》38 条", html)
         self.assertIn('class="caveats"', html)
 
     def test_hero_shows_counts(self):
