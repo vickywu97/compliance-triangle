@@ -27,7 +27,7 @@ python scripts/sync_kb_from_bench.py
 
 - 每个场景是一个内置「含幻觉」的预置回答，用于演示校验层如何拦截虚构条号 / 已废止法名。
 - 场景中的法条引注必须**真实可核验**（出自 8 部法之一），幻觉部分须明确标记为构造。
-- 新增场景后跑 `python demo/run_demo.py` 确认 `demo/output/index.html` 正常生成。
+- 新增场景后跑 `python demo/run_demo.py` 确认 `docs/index.html` 正常生成。
 
 ## 3. 贡献引注解析边界用例（`tests/`）
 

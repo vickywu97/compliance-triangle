@@ -27,6 +27,8 @@ from demo.scenarios import SCENARIOS
 def main() -> int:
     out_dir = os.path.join(REPO_ROOT, "demo", "output")
     os.makedirs(out_dir, exist_ok=True)
+    html_dir = os.path.join(REPO_ROOT, "docs")
+    os.makedirs(html_dir, exist_ok=True)
 
     laws = kb.load_kb()
     kb_law_count = kb.count_laws(laws)
@@ -49,8 +51,9 @@ def main() -> int:
         print(f"  [{s['id']}] {s['title']:<10} "
               f"🟢{c['🟢']} 🟡{c['🟡']} 🔴{c['🔴']}  -> {out_path}")
 
-    # Self-contained static HTML showcase (double-click to open, no server)
-    html_path = os.path.join(out_dir, "index.html")
+    # Self-contained static HTML showcase (double-click to open, no server).
+    # Published under docs/ so GitHub Pages can serve it (Pages only allows / or /docs).
+    html_path = os.path.join(html_dir, "index.html")
     write_report_html(demo_data, html_path, with_live=False,
                      kb_laws=kb_law_count, kb_articles=kb_article_count)
     print(f"\n[html] 静态展示页 -> {html_path}")

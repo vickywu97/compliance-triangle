@@ -31,7 +31,7 @@
 - **🟢🟡🔴 徽章**：通过 / 待人工复核（概括·意译·漏但书）/ 未通过（不存在·已废止·张冠李戴）；
   新增 **⚪ 未检测到法条引注**（空回答不再误报 🟢）。
 - **零依赖运行**（仅 Python 标准库 `http.server`）：
-  - 自包含静态展示页 `demo/output/index.html`（离线、零外部依赖、双击即用）；
+  - 自包含静态展示页 `docs/index.html`（离线、零外部依赖、双击即用）；
   - 本地交互服务 `python -m compliance_triangle.web`（粘贴 AI 回答实时校验 `/verify`）；
   - 端到端 LLM 调用 `python -m compliance_triangle.live` 或 Web `/analyze`（调国产模型生成并自动校验）。
 - **测试套件**：32 个 `unittest` 全绿，覆盖引注解析边界、verify 三层校验、KB 计数（8 部法 / 2327 条）、
@@ -52,7 +52,7 @@
 ### 已知限制（诚实声明）
 - **运行时依赖 Bench KB**：`python -m compliance_triangle.web` 与 `demo/run_demo.py` 启动需加载同级
   `legal-hallucination-bench/statutes.jsonl`；KB 缺失时服务降级展示、不崩溃。真正"零依赖、双击即用"
-  的是预生成的 `demo/output/index.html`。
+  的是预生成的 `docs/index.html`。
 - **增值税法覆盖 38/41 条**：第 39–41 条暂未入库，对这几条的引用会被判"未找到"。
 - **信任分级暂未启用**：Bench v1.3 已将 2327 节点全升为 verified，本产品的 Tier A/B 门禁当前恒为真、
   不呈现；核验聚焦存在性 / 时效性 / 逐字一致性。
@@ -62,7 +62,7 @@
 ## 路线图（未发布，记录意图）
 - Phase 1（后端骨架）：场景输入 → LLM → verify 校验 → 结构化 JSON ✅
 - Phase 2（前端）：合规备忘录 UI + 引注核验可视化 ✅
-  - 自包含静态展示页 `demo/output/index.html`（离线、零依赖、双击即用）
+  - 自包含静态展示页 `docs/index.html`（离线、零依赖、双击即用）
   - 零依赖本地服务 `python -m compliance_triangle.web`（实时粘贴校验 `/verify`）
 - Phase 3（作品集化）：独立 README / 互链 / 架构图 / 预览图 / 跨仓库联动 ✅
 - 实时调用 LLM 并自动校验（`live.py` + Web `/analyze` + CLI）✅

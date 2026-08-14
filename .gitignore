@@ -6,7 +6,6 @@ __pycache__/
 
 # Demo outputs are generated; keep the directory, ignore contents
 demo/output/*.md
-!demo/output/index.html
 
 # OS
 .DS_Store

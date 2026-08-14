@@ -7,9 +7,9 @@
 
 > 📦 **双仓库作品集 · 产品篇** —— 地基是 [`legal-hallucination-bench`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench)（量化"AI 法律引注幻觉"的离线基准）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md)。
 
-> 🚀 **在线体验（自包含静态页）**：`demo/output/index.html` 双击即用（无需安装/联网）。也可部署为永久公开链接：
-> - **GitHub Pages**：仓库 Settings → Pages → Source 选 `Deploy from a branch` → `master` 分支、`/demo/output` 目录。启用后地址为 **https://vickywu97.github.io/compliance-triangle/** （注意：需先启用才会生效；且该 `github.io` 地址在中国大陆通常不可达，建议同时保留 `demo/output/index.html` 离线文件供直接打开）。
-> - 其他静态托管（Vercel / Netlify / Cloudflare Pages）直接上传 `demo/output/index.html` 即可。
+> 🚀 **在线体验（自包含静态页）**：`docs/index.html` 双击即用（无需安装/联网）。也可部署为永久公开链接：
+> - **GitHub Pages**：仓库 Settings → Pages → Source 选 `Deploy from a branch` → `master` 分支、`/docs` 目录。启用后地址为 **https://vickywu97.github.io/compliance-triangle/** （注意：需先启用才会生效；且该 `github.io` 地址在中国大陆通常不可达，建议同时保留 `docs/index.html` 离线文件供直接打开）。
+> - 其他静态托管（Vercel / Netlify / Cloudflare Pages）直接上传 `docs/index.html` 即可。
 > 本地服务：`python3 -m compliance_triangle.web`（优先用同级 Bench KB；单独 clone 时自动降级为内置 vendor 快照）。
 
 ---
@@ -43,7 +43,7 @@
 - **校验引擎**：直接复用 `benchmark/verify.py` 的 `resolve_article` + `content_diff`，与基准共用「来源可信度门禁」。
 - **LLM 接入**：`compliance_triangle/llm_adapter.py`（5 个国产模型 OpenAI 兼容层，密钥走环境变量）。
 
-> **运行时依赖说明（诚实）**：本仓库运行期优先读取同级 `legal-hallucination-bench` 的法条 KB（通过 `COMPLIANCE_TRIANGLE_BENCH` 环境变量或同级目录解析），以获得最新数据；**同时内嵌一份 vendor 快照**（`compliance_triangle/vendor/bench_kb/`，2327 节点 / 8 部法），因此即使单独 clone compliance-triangle 也能直接运行。所谓「离线零依赖」严格成立的是**预生成的静态展示页** `demo/output/index.html`（双击即用、不连任何服务）。
+> **运行时依赖说明（诚实）**：本仓库运行期优先读取同级 `legal-hallucination-bench` 的法条 KB（通过 `COMPLIANCE_TRIANGLE_BENCH` 环境变量或同级目录解析），以获得最新数据；**同时内嵌一份 vendor 快照**（`compliance_triangle/vendor/bench_kb/`，2327 节点 / 8 部法），因此即使单独 clone compliance-triangle 也能直接运行。所谓「离线零依赖」严格成立的是**预生成的静态展示页** `docs/index.html`（双击即用、不连任何服务）。
 
 > **数据覆盖说明（诚实）**：增值税法（VAT_LAW）共 **38 条**（主席令第四十一号公布，2026-01-01 施行——"41" 是**公布令号**，并非条文数），KB 已全数逐字核验，无缺漏。8 部法均为完整官方全文。
 
@@ -63,7 +63,7 @@ git clone https://github.com/vickywu97/legal-hallucination-bench.git ../legal-ha
 # 2) 离线演示（无需 API Key / 网络）：跑 5 个内置场景，生成合规备忘录 + 静态展示页
 python demo/run_demo.py
 # -> 合规备忘录: demo/output/S1..S5_*.md
-# -> 静态展示页: demo/output/index.html  （双击即可在浏览器打开，零依赖、离线）
+# -> 静态展示页: docs/index.html  （双击即可在浏览器打开，零依赖、离线）
 ```
 
 演示场景均内置「含幻觉」的预置回答，直接展示校验层如何拦截虚构条号与已废止法名。
@@ -71,13 +71,13 @@ python demo/run_demo.py
 ### Phase 2 前端 · 两种打开方式
 
 **A. 纯静态展示页（推荐先看这个，双击即用）**
-`demo/output/index.html` 是一个**自包含、零外部依赖、可离线**的单文件页面：
+`docs/index.html` 是一个**自包含、零外部依赖、可离线**的单文件页面：
 - 顶部「核验总览」：🟢🟡🔴 计数 KPI + 占比条 + 按法律分布；
 - 5 个演示场景分页签切换，每条引注渲染为彩色卡片（🟢通过 / 🟡待复核 / 🔴未通过），
   并展示「AI 引述 vs 官方原文」对照；
 - 直接在文件管理器双击打开即可，**不需要启动任何服务**。
 
-> 仪表盘长这样（基于真实 demo 数据生成的预览图，完整交互页请打开 `demo/output/index.html`）：
+> 仪表盘长这样（基于真实 demo 数据生成的预览图，完整交互页请打开 `docs/index.html`）：
 > ![合规三角仪表盘预览](docs/dashboard_preview.png)
 
 **B. 本地交互服务（粘贴你自己的 AI 回答实时校验）**
@@ -139,7 +139,7 @@ KB 计数（8 部法 / 2327 条）、Web 渲染降级与实时模型可用性门
 
 - Phase 1（后端骨架）：场景输入 → LLM → verify 校验 → 结构化 JSON ✅ 演示可用
 - Phase 2（前端）：合规备忘录 UI + 引注核验可视化 ✅
-  - 自包含静态展示页 `demo/output/index.html`（离线、零依赖、双击即用）
+  - 自包含静态展示页 `docs/index.html`（离线、零依赖、双击即用）
   - 零依赖本地服务 `python -m compliance_triangle.web`（实时粘贴校验 `/verify`）
 - Phase 3（作品集化）：独立 README / 互链 / 架构图 / 预览图 / 跨仓库联动 ✅
 - 实时调用 LLM 并自动校验（`compliance_triangle/live.py` + Web `/analyze` 端点 + CLI）✅

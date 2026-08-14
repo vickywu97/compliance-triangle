@@ -5,9 +5,9 @@
 
 > 📦 **Two-repo portfolio · Product layer** — the foundation is [`legal-hallucination-bench` (private repo · access on request)](https://github.com/vickywu97/legal-hallucination-bench) (an offline benchmark that quantifies "AI legal-citation hallucination"). The full narrative / elevator pitch is in [`docs/PORTFOLIO.md` (private repo · access on request)](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md).
 
-> 🚀 **Live demo (self-contained static page)**: `demo/output/index.html` opens by double-click (no install / no network needed). It can also be deployed as a permanent public link:
-> - **GitHub Pages**: repo Settings → Pages → Source = `Deploy from a branch` → `master` branch, `/demo/output` folder. Once enabled, the address is **https://vickywu97.github.io/compliance-triangle/** (note: must be enabled first to go live; this `github.io` address is also typically unreachable from mainland China — the offline `demo/output/index.html` is the reliable fallback).
-> - Other static hosts (Vercel / Netlify / Cloudflare Pages): just upload `demo/output/index.html`.
+> 🚀 **Live demo (self-contained static page)**: `docs/index.html` opens by double-click (no install / no network needed). It can also be deployed as a permanent public link:
+> - **GitHub Pages**: repo Settings → Pages → Source = `Deploy from a branch` → `master` branch, `/docs` folder. Once enabled, the address is **https://vickywu97.github.io/compliance-triangle/** (note: must be enabled first to go live; this `github.io` address is also typically unreachable from mainland China — the offline `docs/index.html` is the reliable fallback).
+> - Other static hosts (Vercel / Netlify / Cloudflare Pages): just upload `docs/index.html`.
 > Local server: `python3 -m compliance_triangle.web` (prefers the sibling Bench KB; auto-falls-back to the built-in vendored snapshot when cloned standalone).
 
 > 🌏 中文说明见 [README.md](./README.md).
@@ -55,7 +55,7 @@ then I built Compliance Triangle on the **same verify engine**, gating every AI-
 - **Verification engine**: directly reuses `benchmark/verify.py`'s `resolve_article` + `content_diff`, sharing the benchmark's "source-trust gate".
 - **LLM integration**: `compliance_triangle/llm_adapter.py` (OpenAI-compatible layer for 5 Chinese models; keys via environment variables).
 
-> **Runtime-dependency note (honest)**: at runtime this repo prefers the sibling `legal-hallucination-bench` statute KB (resolved via the `COMPLIANCE_TRIANGLE_BENCH` env var or a sibling directory) to get the latest data; it **also embeds a vendored snapshot** (`compliance_triangle/vendor/bench_kb/`, 2327 nodes / 8 laws), so it runs standalone even if `compliance-triangle` is cloned by itself. The strictly "offline, zero-dependency" claim applies to the **pre-generated static demo page** `demo/output/index.html` (opens by double-click, connects to no service).
+> **Runtime-dependency note (honest)**: at runtime this repo prefers the sibling `legal-hallucination-bench` statute KB (resolved via the `COMPLIANCE_TRIANGLE_BENCH` env var or a sibling directory) to get the latest data; it **also embeds a vendored snapshot** (`compliance_triangle/vendor/bench_kb/`, 2327 nodes / 8 laws), so it runs standalone even if `compliance-triangle` is cloned by itself. The strictly "offline, zero-dependency" claim applies to the **pre-generated static demo page** `docs/index.html` (opens by double-click, connects to no service).
 
 > **Data-coverage note (honest)**: the Value-Added Tax Law (VAT_LAW) has **38 articles** (promulgated by Presidential Order No. 41, effective 2026-01-01 — "41" is the **promulgation order number**, not the article count). The KB has verified all 38 verbatim; nothing is missing. All 8 laws are complete official full texts.
 
@@ -77,7 +77,7 @@ git clone https://github.com/vickywu97/legal-hallucination-bench.git ../legal-ha
 #    generate a compliance memo + a static demo page
 python demo/run_demo.py
 # -> compliance memos: demo/output/S1..S5_*.md
-# -> static demo page: demo/output/index.html  (double-click to open in a browser; zero-dep, offline)
+# -> static demo page: docs/index.html  (double-click to open in a browser; zero-dep, offline)
 ```
 
 The demo scenarios contain pre-built "hallucinated" answers, showing exactly how the verification layer intercepts fabricated article numbers and repealed law names.
@@ -85,13 +85,13 @@ The demo scenarios contain pre-built "hallucinated" answers, showing exactly how
 ### Phase 2 front-end · two ways to open
 
 **A. Pure static demo page (recommended first look, double-click to use)**
-`demo/output/index.html` is a **self-contained, zero-external-dependency, offline-capable** single-file page:
+`docs/index.html` is a **self-contained, zero-external-dependency, offline-capable** single-file page:
 - Top "Verification overview": 🟢🟡🔴 count KPIs + ratio bars + breakdown by law;
 - 5 demo scenarios as tabs; each citation rendered as a colored card (🟢 pass / 🟡 review / 🔴 fail),
   showing "AI quote vs. official text" side by side;
 - Just double-click to open in a file manager — **no server needed**.
 
-> Dashboard preview (a preview image generated from real demo data; open `demo/output/index.html` for the full interactive page):
+> Dashboard preview (a preview image generated from real demo data; open `docs/index.html` for the full interactive page):
 > ![Compliance Triangle dashboard preview](docs/dashboard_preview.png)
 
 **B. Local interactive server (paste your own AI answer for real-time verification)**
@@ -149,7 +149,7 @@ Coverage: citation-parsing edge cases (no "条" character, English law names, co
 
 - Phase 1 (back-end skeleton): scenario input → LLM → verify → structured JSON ✅ demo-ready
 - Phase 2 (front-end): compliance-memo UI + citation-verification visualization ✅
-  - self-contained static demo page `demo/output/index.html` (offline, zero-dep, double-click)
+  - self-contained static demo page `docs/index.html` (offline, zero-dep, double-click)
   - zero-dep local server `python -m compliance_triangle.web` (real-time paste verification `/verify`)
 - Phase 3 (portfolio-ize): standalone README / cross-links / architecture diagram / preview image / cross-repo wiring ✅
 - Live LLM call + automatic verification (`compliance_triangle/live.py` + Web `/analyze` endpoint + CLI) ✅
