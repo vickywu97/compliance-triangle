@@ -145,6 +145,15 @@ Coverage: citation-parsing edge cases (no "条" character, English law names, co
 - **Runtime depends on the Bench KB** (see "Runtime-dependency note" above).
 - Citation parsing already covers common edge cases: no "条" character (第一百四十二条), English law names (`《Company Law》Article 142`), continuations (`《公司法》第15条、第142条`), nested book-title marks, quote-colon-then-original-text, etc. Very obscure phrasings may still slip through and be judged "not found" rather than falsely passed.
 
+## Validated by (early user validation)
+
+> Real trial feedback from practicing lawyers / tax advisors / patent attorneys (early validation, not a commercial endorsement).
+> Collection template and backfill instructions: see `用户验证-合规三角.md` in repo.
+
+<!-- TODO: paste 1–3 representative peer comments here, format:
+> Name / role (e.g., practicing lawyer, X yrs corporate law) — one-line note (e.g., 🟡/🔴 flags on corporate-law citations were accurate, no false kills).
+-->
+
 ## Roadmap
 
 - Phase 1 (back-end skeleton): scenario input → LLM → verify → structured JSON ✅ demo-ready
