@@ -1,5 +1,5 @@
 """Unit tests for citation_parser — the parser must survive messy real-world
-LLM outputs, not just the textbook 《法律》第X条 shape."""
+LLM outputs, not just the canonical 《法律》第X条 shape."""
 import unittest
 
 from compliance_triangle.citation_parser import (
