@@ -46,7 +46,7 @@
 
 **Headline**: Shipping Compliance Triangle v1.0.0 — turning "AI cites law incorrectly" from a metric into a real-time guardrail.
 
-After a decade as a lawyer, tax agent, and patent attorney, I'm pivoting into AI legal product management. My portfolio now has two linked repos:
+After a decade as a lawyer, tax agent, and patent attorney, I'm building AI legal products. My portfolio now has two linked repos:
 
 1. **legal-hallucination-bench** — an offline, expert-verified benchmark proving how badly LLMs quote Chinese statutes. On the most forgiving metric, even the best domestic model still hallucinates on **33%** of citations; on verbatim accuracy across 8 law domains, the rate is **0%**.
 2. **compliance-triangle** (v1.0.0, just released) — the product layer. It takes the *same* verification engine and turns "measuring hallucination" into "blocking it in real time."
