@@ -288,7 +288,7 @@ _TPL = """<!DOCTYPE html>
 <main class="wrap">
   <section class="block"><h2>核验总览</h2><div id="dash"></div></section>
   <section class="block">
-    <h2>演示场景（内置 5 个含幻觉样本）</h2>
+    <h2>演示场景（内置含幻觉样本的场景）</h2>
     <div id="tabs" class="tabs"></div>
     <div id="panes" class="panes"></div>
   </section>
@@ -298,6 +298,7 @@ _TPL = """<!DOCTYPE html>
     <p>🟡 <b>待人工复核</b>：法条真实存在，但 AI 引述的措辞/但书与官方原文不一致，请人工比对。</p>
     <p>🔴 <b>未通过核验</b>：条文不存在/未生效，或引用了已废止法律——相关合规结论不可轻信。</p>
     <p class="src">本产品复用 <code>legal-hallucination-bench</code> 的 verify 引擎（同一套严格逐字内容策略），锚定 2327 条已核验法条全文。AI 可能编造法条，本系统负责拦截。</p>
+    <p class="src"><b>⚠️ 免责声明</b>：本演示仅对引注做自动化核验，<b>不构成法律意见、税务意见或专利意见</b>，不替代执业律师、税务师、专利代理师的专业判断。法条文本来自公开官方来源，可能因法条更新或提取误差存在偏差，请以官方最新公布文本为准。</p>
   __CAVEATS__
   </section>
 </main>

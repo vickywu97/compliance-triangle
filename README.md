@@ -5,6 +5,8 @@
 
 > 📦 **双仓库作品集 · 产品篇** —— 地基是 [`legal-hallucination-bench`](https://github.com/vickywu97/legal-hallucination-bench)（量化"AI 法律引注幻觉"的离线基准）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md)。
 
+> 🚀 **在线体验（自包含静态页）**：`demo/output/index.html` 双击即用（无需安装/联网）；或部署到任意静态托管（GitHub Pages / Vercel / Netlify）获得永久公开链接（GitHub Pages：仓库 Settings → Pages → Source 选 `master` 分支、目录 `/demo/output`）。本地服务：`python3 -m compliance_triangle.web`（需同级 Bench KB）。
+
 ---
 
 ## 产品叙事（作品集核心）
@@ -42,6 +44,9 @@
 
 > 与地基仓库的"地基 → 产品"关系图：
 > ![作品集架构](https://raw.githubusercontent.com/vickywu97/legal-hallucination-bench/master/docs/portfolio_architecture.svg)
+
+## 免责声明
+> ⚠️ 本工具（合规三角）仅对 AI 生成的法条引注做**存在性 / 时效性 / 内容匹配**的自动化校验，**不构成法律意见、税务意见或专利意见**，也不能替代执业律师、税务师、专利代理师的专业判断。校验结果（🟢🟡🔴）仅反映引注与官方法条文本的匹配情况，不保证任何合规结论的正确性或适用性；使用者应就具体事项咨询持证专业人士。工具引用的法条文本来自公开官方来源，评测结论为自动化判分结果，可能因法条更新或提取误差存在偏差，请以官方最新公布文本为准。
 
 ## 快速开始
 
