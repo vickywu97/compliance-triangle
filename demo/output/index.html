@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>合规三角 · 引注核验演示</title>
+<style>
+* { box-sizing: border-box; }
+body { margin:0; font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+       background:#f1f5f9; color:#0f172a; line-height:1.5; }
+.wrap { max-width:1000px; margin:0 auto; padding:0 20px; }
+.hero { background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; padding:40px 0 30px; }
+.hero h1 { margin:0 0 8px; font-size:30px; }
+.hero .sub { font-size:16px; opacity:.8; font-weight:400; margin-left:8px; }
+.hero .tag { margin:0 0 6px; font-size:15px; opacity:.95; }
+.hero .meta { margin:0; font-size:13px; opacity:.85; }
+.hero b { font-weight:700; }
+.block { background:#fff; border-radius:14px; padding:22px 24px; margin:22px 0;
+         box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.block h2 { margin:0 0 16px; font-size:20px; }
+.kpis { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
+.kpi { flex:1; min-width:120px; background:#f8fafc; border:1px solid #e2e8f0;
+       border-radius:12px; padding:14px; text-align:center; }
+.kpi .n { font-size:30px; font-weight:700; }
+.kpi.g .n { color:#16a34a; } .kpi.y .n { color:#d97706; } .kpi.r .n { color:#dc2626; }
+.bars { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+.bar .blabel { display:flex; justify-content:space-between; font-size:13px;
+               margin-bottom:4px; color:#334155; }
+.track { background:#e2e8f0; border-radius:8px; height:14px; overflow:hidden; }
+.fill { height:100%; border-radius:8px; }
+.fill.g { background:#16a34a; } .fill.y { background:#d97706; } .fill.r { background:#dc2626; }
+.lawbreak h3 { font-size:15px; margin:6px 0 10px; }
+.lawrow { display:flex; align-items:center; gap:12px; padding:6px 0;
+          border-bottom:1px solid #f1f5f9; font-size:14px; }
+.lawrow .lname { flex:1; font-weight:600; }
+.lawrow .lc { font-variant-numeric:tabular-nums; }
+.lc.g { color:#16a34a; } .lc.y { color:#d97706; } .lc.r { color:#dc2626; }
+.tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.tab { border:1px solid #c7d2fe; background:#eef2ff; color:#4338ca; padding:8px 14px;
+       border-radius:999px; cursor:pointer; font-size:14px; }
+.tab.active { background:#4f46e5; color:#fff; border-color:#4f46e5; }
+.panes .pane { display:none; }
+.panes .pane.show { display:block; }
+.metarow { display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+           margin-bottom:12px; font-size:13px; color:#475569; }
+.pill { padding:2px 8px; border-radius:999px; font-weight:600; }
+.pill.g { background:#dcfce7; color:#16a34a; } .pill.y { background:#fef3c7; color:#d97706; }
+.pill.r { background:#fee2e2; color:#dc2626; }
+.overall { margin-left:auto; font-weight:700; color:#0f172a; }
+.scenario-desc { background:#f8fafc; border-left:3px solid #4f46e5; padding:10px 14px;
+                 border-radius:0 8px 8px 0; margin-bottom:12px; font-size:14px; }
+.raw { margin-bottom:14px; } .raw summary { cursor:pointer; color:#4f46e5; font-size:14px; }
+.raw pre { white-space:pre-wrap; background:#0f172a; color:#e2e8f0; padding:14px;
+            border-radius:10px; font-size:13px; overflow:auto; }
+.cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:12px; }
+.card { border-radius:12px; padding:14px; border:1px solid; background:#fff; }
+.card.g { border-color:#86efac; background:#f0fdf4; }
+.card.y { border-color:#fcd34d; background:#fffbeb; }
+.card.r { border-color:#fca5a5; background:#fef2f2; }
+.card .ctop { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.card .bdg { font-size:18px; }
+.card .cit { font-weight:700; font-size:15px; }
+.card .st { font-size:13px; font-weight:600; margin-bottom:4px; }
+.card .note { font-size:13px; color:#334155; }
+.card .lbl { font-size:12px; color:#64748b; font-weight:600; }
+.card .qtxt, .card .gtxt { font-size:12.5px; background:#fff; border:1px solid #e2e8f0;
+            border-radius:8px; padding:8px; margin-top:4px; max-height:160px; overflow:auto; }
+.card .gtxt { color:#0f172a; }
+.qt, .gt { margin-top:8px; }
+.live-controls { display:flex; align-items:center; gap:14px; margin:12px 0; flex-wrap:wrap; }
+.live-controls label { font-size:14px; color:#334155; }
+.live-controls input[type=date] { padding:6px 8px; border:1px solid #cbd5e1; border-radius:8px; }
+.run { background:#4f46e5; color:#fff; border:none; padding:9px 18px; border-radius:10px;
+       cursor:pointer; font-size:14px; font-weight:600; }
+.run:hover { background:#4338ca; }
+#answer, #scenario { width:100%; min-height:140px; border:1px solid #cbd5e1; border-radius:10px;
+          padding:12px; font-size:14px; font-family:inherit; resize:vertical; }
+#scenario { min-height:80px; margin-bottom:10px; }
+.liveOut { margin-top:16px; }
+.liveOut.show { display:block; }
+.loading, .err { padding:16px; border-radius:10px; font-size:14px; }
+.loading { background:#eef2ff; color:#4338ca; }
+.err { background:#fee2e2; color:#dc2626; }
+.footnote p { font-size:13px; color:#475569; margin:6px 0; }
+.footnote .src { margin-top:12px; padding-top:12px; border-top:1px solid #e2e8f0; color:#64748b; }
+.notice { background:#fffbeb; border:1px solid #fcd34d; color:#92400e; padding:10px 14px;
+          border-radius:10px; font-size:13px; margin:10px 0 0; }
+.caveats { margin:10px 0 0; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0;
+           border-radius:10px; }
+.caveats b { color:#334155; }
+.caveats ul { margin:6px 0 0; padding-left:20px; }
+.caveats li { font-size:13px; color:#64748b; margin:3px 0; }
+code { background:#f1f5f9; padding:2px 6px; border-radius:6px; font-size:12px; }
+.hint { font-size:14px; color:#475569; margin:0 0 6px; }
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <h1>合规三角 <span class="sub">Compliance Triangle</span></h1>
+  <p class="tag">法律合规 · 税务合规 · 知识产权合规 —— 同一套 verify 引擎，为 AI 生成的每条法条引注把关</p>
+  <p class="meta">基准库：<b>2327</b> 条已核验法条（<b>8</b> 部法，源自 legal-hallucination-bench）｜ 引注核验：🟢通过 🟡待复核 🔴未通过</p>
+  
+</div></header>
+<main class="wrap">
+  <section class="block"><h2>核验总览</h2><div id="dash"></div></section>
+  <section class="block">
+    <h2>演示场景（内置含幻觉样本的场景）</h2>
+    <div id="tabs" class="tabs"></div>
+    <div id="panes" class="panes"></div>
+  </section>
+  
+  <section class="block footnote">
+    <p>🟢 <b>已核验通过</b>：法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对；或引述与官方原文逐字一致）。</p>
+    <p>🟡 <b>待人工复核</b>：法条真实存在，但 AI 引述的措辞/但书与官方原文不一致，请人工比对。</p>
+    <p>🔴 <b>未通过核验</b>：条文不存在/未生效，或引用了已废止法律——相关合规结论不可轻信。</p>
+    <p class="src">本产品复用 <code>legal-hallucination-bench</code> 的 verify 引擎（同一套严格逐字内容策略），锚定 2327 条已核验法条全文。AI 可能编造法条，本系统负责拦截。</p>
+    <p class="src"><b>⚠️ 免责声明</b>：本演示仅对引注做自动化核验，<b>不构成法律意见、税务意见或专利意见</b>，不替代执业律师、税务师、专利代理师的专业判断。法条文本来自公开官方来源，可能因法条更新或提取误差存在偏差，请以官方最新公布文本为准。</p>
+  
+  </section>
+</main>
+<script>
+const DATA = [{"scenario": {"id": "S1", "title": "员工股权激励", "scenario": "拟对核心技术骨干实施股权激励（限制性股票），需评估法律与税务合规要点。", "as_of_date": "2025-01-01", "answer": "就员工股权激励方案，法律合规层面可依据《公司法》第142条（股份有限公司可收购本公司股份用于员工持股计划），但需注意表决程序。旧法层面有观点认为应参考《旧公司法》第16条，该观点已不适用。税务合规层面，员工取得股权奖励应按《个人所得税法》第2条：工资薪金所得及股权激励所得均应缴纳个人所得税，可适用递延纳税政策。另需注意《个人所得税法》第999条规定的特别扣除，目前缺乏依据。"}, "answer": "就员工股权激励方案，法律合规层面可依据《公司法》第142条（股份有限公司可收购本公司股份用于员工持股计划），但需注意表决程序。旧法层面有观点认为应参考《旧公司法》第16条，该观点已不适用。税务合规层面，员工取得股权奖励应按《个人所得税法》第2条：工资薪金所得及股权激励所得均应缴纳个人所得税，可适用递延纳税政策。另需注意《个人所得税法》第999条规定的特别扣除，目前缺乏依据。", "result": {"scenario_id": "S1", "as_of": "2025-01-01", "items": [{"raw_law": "中华人民共和国公司法", "article_no": "142", "law_canonical": "中华人民共和国公司法", "quoted": "", "badge": "🟢", "status": "OK", "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。", "ground_truth": "公司的资本划分为股份。公司的全部股份，根据公司章程的规定择一采用面额股或者无面额股。采用面额股的，每一股的金额相等。公司可以根据公司章程的规定将已发行的面额股全部转换为无面额股或者将无面额股全部转换为面额股。采用无面额股的，应当将发行股份所得股款的二分之一以上计入注册资本。", "as_of": "2025-01-01"}, {"raw_law": "旧公司法", "article_no": "16", "law_canonical": "中华人民共和国公司法", "quoted": "", "badge": "🔴", "status": "TEMPORAL_DEPRECATED", "note": "引用了已废止法律「旧公司法」（2024-07-01 已废止），现行有效法律为 中华人民共和国公司法。", "ground_truth": "", "as_of": "2025-01-01"}, {"raw_law": "中华人民共和国个人所得税法", "article_no": "2", "law_canonical": "中华人民共和国个人所得税法", "quoted": "工资薪金所得及股权激励所得均应缴纳个人所得税，可适用递延纳税政策", "badge": "🟡", "status": "FABRICATED", "note": "法条真实存在，但引述内容与官方条文不一致（子句覆盖率 0%）。可能为概括/意译或遗漏但书，请人工复核。", "ground_truth": "下列各项个人所得，应当缴纳个人所得税：（一）工资、薪金所得；（二）劳务报酬所得；（三）稿酬所得；（四）特许权使用费所得；（五）经营所得；（六）利息、股息、红利所得；（七）财产租赁所得；（八）财产转让所得；（九）偶然所得。居民个人取得前款第一项至第四项所得（以下称综合所得），按纳税年度合并计算个人所得税；非居民个人取得前款第一项至第四项所得，按月或者按次分项计算个人所得税。纳税人取得前款第五项至第九项所得，依照本法规定分别计算个人所得税。", "as_of": "2025-01-01"}, {"raw_law": "个人所得税法", "article_no": "999", "law_canonical": "中华人民共和国个人所得税法", "quoted": "", "badge": "🔴", "status": "NOT_FOUND", "note": "条文不存在或在该日期未生效（可能是虚构条号、已移序号或法律名无法识别）", "ground_truth": "", "as_of": "2025-01-01"}], "counts": {"🟢": 1, "🟡": 1, "🔴": 2}, "has_citations": true, "overall": "🔴 存在未通过核验的引注，合规结论不可轻信"}}, {"scenario": {"id": "S2", "title": "专利作价入股", "scenario": "发明人拟以其专利技术作价向公司出资，需评估知识产权、公司、税务三域合规。", "as_of_date": "2025-01-01", "answer": "专利作价入股涉及多法域交叉。知识产权合规层面，职务发明创造的权利归属依《专利法》第6条（执行本单位任务完成的发明创造为职务发明创造），非职务发明方可由发明人自主作价。法律合规层面，以非货币财产出资需符合《公司法》第999条关于出资形式的规定（注：该条实际不存在，系示例虚构）。税务合规层面，技术入股的所得税处理参见《企业所得税法》第30条：企业开发新技术发生的研发费用可以加计扣除，但作价入股环节另有特殊性税务处理规定。"}, "answer": "专利作价入股涉及多法域交叉。知识产权合规层面，职务发明创造的权利归属依《专利法》第6条（执行本单位任务完成的发明创造为职务发明创造），非职务发明方可由发明人自主作价。法律合规层面，以非货币财产出资需符合《公司法》第999条关于出资形式的规定（注：该条实际不存在，系示例虚构）。税务合规层面，技术入股的所得税处理参见《企业所得税法》第30条：企业开发新技术发生的研发费用可以加计扣除，但作价入股环节另有特殊性税务处理规定。", "result": {"scenario_id": "S2", "as_of": "2025-01-01", "items": [{"raw_law": "中华人民共和国专利法", "article_no": "6", "law_canonical": "中华人民共和国专利法", "quoted": "", "badge": "🟢", "status": "OK", "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。", "ground_truth": "执行本单位的任务或者主要是利用本单位的物质技术条件所完成的发明创造为职务发明创造。职务发明创造申请专利的权利属于该单位，申请被批准后，该单位为专利权人。该单位可以依法处置其职务发明创造申请专利的权利和专利权，促进相关发明创造的实施和运用。非职务发明创造，申请专利的权利属于发明人或者设计人；申请被批准后，该发明人或者设计人为专利权人。利用本单位的物质技术条件所完成的发明创造，单位与发明人或者设计人订有合同，对申请专利的权利和专利权的归属作出约定的，从其约定。", "as_of": "2025-01-01"}, {"raw_law": "公司法", "article_no": "999", "law_canonical": "中华人民共和国公司法", "quoted": "", "badge": "🔴", "status": "NOT_FOUND", "note": "条文不存在或在该日期未生效（可能是虚构条号、已移序号或法律名无法识别）", "ground_truth": "", "as_of": "2025-01-01"}, {"raw_law": "中华人民共和国企业所得税法", "article_no": "30", "law_canonical": "中华人民共和国企业所得税法", "quoted": "企业开发新技术发生的研发费用可以加计扣除，但作价入股环节另有特殊性税务处理规定", "badge": "🟡", "status": "FABRICATED", "note": "法条真实存在，但引述内容与官方条文不一致（子句覆盖率 0%）。可能为概括/意译或遗漏但书，请人工复核。", "ground_truth": "企业的下列支出，可以在计算应纳税所得额时加计扣除：（一）开发新技术、新产品、新工艺发生的研究开发费用；（二）安置残疾人员及国家鼓励安置的其他就业人员所支付的工资。", "as_of": "2025-01-01"}], "counts": {"🟢": 1, "🟡": 1, "🔴": 1}, "has_citations": true, "overall": "🔴 存在未通过核验的引注，合规结论不可轻信"}}, {"scenario": {"id": "S3", "title": "跨境技术许可", "scenario": "公司向境外被许可方授予专利实施许可并收取特许权使用费，需评估合规要点。", "as_of_date": "2025-01-01", "answer": "跨境技术许可需关注知识产权与税务。知识产权合规层面，专利权转让依《专利法》第10条（转让专利权应订立书面合同并登记），涉外许可另须办理技术进出口登记。税务合规层面，特许权使用费代扣代缴依《企业所得税法》第999条处理（示例虚构条号）。合同违约救济可参考《民法典》第584条：当事人一方不履行合同义务，对方可请求赔偿损失，赔偿额应相当于因违约造成的损失，包括可得利益损失。"}, "answer": "跨境技术许可需关注知识产权与税务。知识产权合规层面，专利权转让依《专利法》第10条（转让专利权应订立书面合同并登记），涉外许可另须办理技术进出口登记。税务合规层面，特许权使用费代扣代缴依《企业所得税法》第999条处理（示例虚构条号）。合同违约救济可参考《民法典》第584条：当事人一方不履行合同义务，对方可请求赔偿损失，赔偿额应相当于因违约造成的损失，包括可得利益损失。", "result": {"scenario_id": "S3", "as_of": "2025-01-01", "items": [{"raw_law": "中华人民共和国专利法", "article_no": "10", "law_canonical": "中华人民共和国专利法", "quoted": "", "badge": "🟢", "status": "OK", "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。", "ground_truth": "专利申请权和专利权可以转让。中国单位或者个人向外国人、外国企业或者外国其他组织转让专利申请权或者专利权的，应当依照有关法律、行政法规的规定办理手续。转让专利申请权或者专利权的，当事人应当订立书面合同，并向国务院专利行政部门登记，由国务院专利行政部门予以公告。专利申请权或者专利权的转让自登记之日起生效。", "as_of": "2025-01-01"}, {"raw_law": "企业所得税法", "article_no": "999", "law_canonical": "中华人民共和国企业所得税法", "quoted": "", "badge": "🔴", "status": "NOT_FOUND", "note": "条文不存在或在该日期未生效（可能是虚构条号、已移序号或法律名无法识别）", "ground_truth": "", "as_of": "2025-01-01"}, {"raw_law": "中华人民共和国民法典", "article_no": "584", "law_canonical": "中华人民共和国民法典", "quoted": "当事人一方不履行合同义务，对方可请求赔偿损失，赔偿额应相当于因违约造成的损失，包括可得利益损失", "badge": "🟡", "status": "FABRICATED", "note": "法条真实存在，但引述内容与官方条文不一致（子句覆盖率 0%）。可能为概括/意译或遗漏但书，请人工复核。", "ground_truth": "当事人一方不履行合同义务或者履行合同义务不符合约定，造成对方损失的，损失赔偿额应当相当于因违约所造成的损失，包括合同履行后可以获得的利益；但是，不得超过违约一方订立合同时预见到或者应当预见到的因违约可能造成的损失。", "as_of": "2025-01-01"}], "counts": {"🟢": 1, "🟡": 1, "🔴": 1}, "has_citations": true, "overall": "🔴 存在未通过核验的引注，合规结论不可轻信"}}, {"scenario": {"id": "S4", "title": "研发费用加计扣除", "scenario": "企业拟就研发活动申请企业所得税研发费用加计扣除，需确认合规要件。", "as_of_date": "2025-01-01", "answer": "企业研发费用加计扣除的合规要点：税务合规层面，依据《企业所得税法》第30条（研究开发费用加计扣除），研发费用归集须符合相关规定。知识产权合规层面，研发形成的专利申请权归属依《专利法》第22条（授予专利权的发明应具备新颖性、创造性、实用性）。另需注意《企业所得税法》第999条关于研发人员工资的特殊规定（示例虚构）。"}, "answer": "企业研发费用加计扣除的合规要点：税务合规层面，依据《企业所得税法》第30条（研究开发费用加计扣除），研发费用归集须符合相关规定。知识产权合规层面，研发形成的专利申请权归属依《专利法》第22条（授予专利权的发明应具备新颖性、创造性、实用性）。另需注意《企业所得税法》第999条关于研发人员工资的特殊规定（示例虚构）。", "result": {"scenario_id": "S4", "as_of": "2025-01-01", "items": [{"raw_law": "中华人民共和国企业所得税法", "article_no": "30", "law_canonical": "中华人民共和国企业所得税法", "quoted": "", "badge": "🟢", "status": "OK", "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。", "ground_truth": "企业的下列支出，可以在计算应纳税所得额时加计扣除：（一）开发新技术、新产品、新工艺发生的研究开发费用；（二）安置残疾人员及国家鼓励安置的其他就业人员所支付的工资。", "as_of": "2025-01-01"}, {"raw_law": "中华人民共和国专利法", "article_no": "22", "law_canonical": "中华人民共和国专利法", "quoted": "", "badge": "🟢", "status": "OK", "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。", "ground_truth": "授予专利权的发明和实用新型，应当具备新颖性、创造性和实用性。新颖性，是指该发明或者实用新型不属于现有技术；也没有任何单位或者个人就同样的发明或者实用新型在申请日以前向国务院专利行政部门提出过申请，并记载在申请日以后公布的专利申请文件或者公告的专利文件中。创造性，是指与现有技术相比，该发明具有突出的实质性特点和显著的进步，该实用新型具有实质性特点和进步。实用性，是指该发明或者实用新型能够制造或者使用，并且能够产生积极效果。本法所称现有技术，是指申请日以前在国内外为公众所知的技术。", "as_of": "2025-01-01"}, {"raw_law": "企业所得税法", "article_no": "999", "law_canonical": "中华人民共和国企业所得税法", "quoted": "", "badge": "🔴", "status": "NOT_FOUND", "note": "条文不存在或在该日期未生效（可能是虚构条号、已移序号或法律名无法识别）", "ground_truth": "", "as_of": "2025-01-01"}], "counts": {"🟢": 2, "🟡": 0, "🔴": 1}, "has_citations": true, "overall": "🔴 存在未通过核验的引注，合规结论不可轻信"}}, {"scenario": {"id": "S5", "title": "公司对外担保决策", "scenario": "公司拟为关联方提供大额保证担保，需确认决议程序与违约救济。", "as_of_date": "2025-01-01", "answer": "公司对外担保决策要点：法律合规层面，依《公司法》第15条（公司向其他企业投资或为他人提供担保，按章程由董事会或股东会决议），旧法《旧公司法》第16条已被取代。民法典层面违约救济见《民法典》第584条：约定违约金低于损失的，当事人可请求法院予以增加。另《公司法》第999条规定了担保决议的特殊程序（示例虚构）。"}, "answer": "公司对外担保决策要点：法律合规层面，依《公司法》第15条（公司向其他企业投资或为他人提供担保，按章程由董事会或股东会决议），旧法《旧公司法》第16条已被取代。民法典层面违约救济见《民法典》第584条：约定违约金低于损失的，当事人可请求法院予以增加。另《公司法》第999条规定了担保决议的特殊程序（示例虚构）。", "result": {"scenario_id": "S5", "as_of": "2025-01-01", "items": [{"raw_law": "中华人民共和国公司法", "article_no": "15", "law_canonical": "中华人民共和国公司法", "quoted": "", "badge": "🟢", "status": "OK", "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。", "ground_truth": "公司向其他企业投资或者为他人提供担保，按照公司章程的规定，由董事会或者股东会决议；公司章程对投资或者担保的总额及单项投资或者担保的数额有限额规定的，不得超过规定的限额。公司为公司股东或者实际控制人提供担保的，应当经股东会决议。前款规定的股东或者受前款规定的实际控制人支配的股东，不得参加前款规定事项的表决。该项表决由出席会议的其他股东所持表决权的过半数通过。", "as_of": "2025-01-01"}, {"raw_law": "旧公司法", "article_no": "16", "law_canonical": "中华人民共和国公司法", "quoted": "", "badge": "🔴", "status": "TEMPORAL_DEPRECATED", "note": "引用了已废止法律「旧公司法」（2024-07-01 已废止），现行有效法律为 中华人民共和国公司法。", "ground_truth": "", "as_of": "2025-01-01"}, {"raw_law": "中华人民共和国民法典", "article_no": "584", "law_canonical": "中华人民共和国民法典", "quoted": "约定违约金低于损失的，当事人可请求法院予以增加", "badge": "🟡", "status": "FABRICATED", "note": "法条真实存在，但引述内容与官方条文不一致（子句覆盖率 0%）。可能为概括/意译或遗漏但书，请人工复核。", "ground_truth": "当事人一方不履行合同义务或者履行合同义务不符合约定，造成对方损失的，损失赔偿额应当相当于因违约所造成的损失，包括合同履行后可以获得的利益；但是，不得超过违约一方订立合同时预见到或者应当预见到的因违约可能造成的损失。", "as_of": "2025-01-01"}, {"raw_law": "公司法", "article_no": "999", "law_canonical": "中华人民共和国公司法", "quoted": "", "badge": "🔴", "status": "NOT_FOUND", "note": "条文不存在或在该日期未生效（可能是虚构条号、已移序号或法律名无法识别）", "ground_truth": "", "as_of": "2025-01-01"}], "counts": {"🟢": 1, "🟡": 1, "🔴": 2}, "has_citations": true, "overall": "🔴 存在未通过核验的引注，合规结论不可轻信"}}, {"scenario": {"id": "S6", "title": "出海技术公司三域合规", "scenario": "一家中国技术公司拟赴东南亚设合资公司并输出技术与品牌，需同时评估法律（公司治理）、税务（增值税与跨境）、知识产权（专利）三域合规——对应作者律师 / 税务师 / 专利代理师三证合一。", "as_of_date": "2026-06-01", "answer": "针对贵司拟赴东南亚设立合资公司的合规方案，提示如下：一、公司治理（律师视角）根据《公司法》第16条，公司需依法保障职工合法权益。上述方案中还引用了《公司法》第999条关于股东会特别决议的规定，但该公司法全文仅266条，该条号并不存在。二、税务合规（税务师视角）依据《增值税法》第1条，在境内销售货物、服务以及进口货物的单位和个人为增值税纳税人。跨境数字服务还需关注《增值税法》第99条规定的零税率适用情形，但增值税法全文仅38条，该条号并不存在。三、知识产权合规（专利代理师视角）根据《专利法》第11条，未经专利权人许可不得实施其专利。《专利法》第2条所称发明创造是指发明、实用新型和外观设计。发明是指对产品、方法或者其改进所提出的新的技术方案。实用新型是指对产品的形状、构造或者其结合所提出的适于实用的新的技术方案。此外《专利法》第888条关于标准必要专利强制许可的规则需另行评估，但专利法全文仅82条，该条号并不存在。"}, "answer": "针对贵司拟赴东南亚设立合资公司的合规方案，提示如下：一、公司治理（律师视角）根据《公司法》第16条，公司需依法保障职工合法权益。上述方案中还引用了《公司法》第999条关于股东会特别决议的规定，但该公司法全文仅266条，该条号并不存在。二、税务合规（税务师视角）依据《增值税法》第1条，在境内销售货物、服务以及进口货物的单位和个人为增值税纳税人。跨境数字服务还需关注《增值税法》第99条规定的零税率适用情形，但增值税法全文仅38条，该条号并不存在。三、知识产权合规（专利代理师视角）根据《专利法》第11条，未经专利权人许可不得实施其专利。《专利法》第2条所称发明创造是指发明、实用新型和外观设计。发明是指对产品、方法或者其改进所提出的新的技术方案。实用新型是指对产品的形状、构造或者其结合所提出的适于实用的新的技术方案。此外《专利法》第888条关于标准必要专利强制许可的规则需另行评估，但专利法全文仅82条，该条号并不存在。", "result": {"scenario_id": "S6", "as_of": "2026-06-01", "items": [{"raw_law": "中华人民共和国公司法", "article_no": "16", "law_canonical": "中华人民共和国公司法", "quoted": "", "badge": "🟢", "status": "OK", "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。", "ground_truth": "公司应当保护职工的合法权益，依法与职工签订劳动合同，参加社会保险，加强劳动保护，实现安全生产。公司应当采用多种形式，加强公司职工的职业教育和岗位培训，提高职工素质。", "as_of": "2026-06-01"}, {"raw_law": "公司法", "article_no": "999", "law_canonical": "中华人民共和国公司法", "quoted": "", "badge": "🔴", "status": "NOT_FOUND", "note": "条文不存在或在该日期未生效（可能是虚构条号、已移序号或法律名无法识别）", "ground_truth": "", "as_of": "2026-06-01"}, {"raw_law": "中华人民共和国增值税法", "article_no": "1", "law_canonical": "中华人民共和国增值税法", "quoted": "", "badge": "🟢", "status": "OK", "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。", "ground_truth": "为了健全有利于高质量发展的增值税制度，规范增值税的征收和缴纳，保护纳税人的合法权益，制定本法。", "as_of": "2026-06-01"}, {"raw_law": "增值税法", "article_no": "99", "law_canonical": "中华人民共和国增值税法", "quoted": "", "badge": "🔴", "status": "NOT_FOUND", "note": "条文不存在或在该日期未生效（可能是虚构条号、已移序号或法律名无法识别）", "ground_truth": "", "as_of": "2026-06-01"}, {"raw_law": "中华人民共和国专利法", "article_no": "11", "law_canonical": "中华人民共和国专利法", "quoted": "", "badge": "🟢", "status": "OK", "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。", "ground_truth": "发明和实用新型专利权被授予后，除本法另有规定的以外，任何单位或者个人未经专利权人许可，都不得实施其专利，即不得为生产经营目的制造、使用、许诺销售、销售、进口其专利产品，或者使用其专利方法以及使用、许诺销售、销售、进口依照该专利方法直接获得的产品。外观设计专利权被授予后，任何单位或者个人未经专利权人许可，都不得实施其专利，即不得为生产经营目的制造、许诺销售、销售、进口其外观设计专利产品。", "as_of": "2026-06-01"}, {"raw_law": "中华人民共和国专利法", "article_no": "2", "law_canonical": "中华人民共和国专利法", "quoted": "", "badge": "🟢", "status": "OK", "note": "法条存在且在有效期内（仅作存在性核验，未提供引述文本做逐字比对）。", "ground_truth": "本法所称的发明创造是指发明、实用新型和外观设计。发明，是指对产品、方法或者其改进所提出的新的技术方案。实用新型，是指对产品的形状、构造或者其结合所提出的适于实用的新的技术方案。外观设计，是指对产品的整体或者局部的形状、图案或者其结合以及色彩与形状、图案的结合所作出的富有美感并适于工业应用的新设计。", "as_of": "2026-06-01"}, {"raw_law": "专利法", "article_no": "888", "law_canonical": "中华人民共和国专利法", "quoted": "", "badge": "🔴", "status": "NOT_FOUND", "note": "条文不存在或在该日期未生效（可能是虚构条号、已移序号或法律名无法识别）", "ground_truth": "", "as_of": "2026-06-01"}], "counts": {"🟢": 4, "🟡": 0, "🔴": 3}, "has_citations": true, "overall": "🔴 存在未通过核验的引注，合规结论不可轻信"}}];
+const WITH_LIVE = false;
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function badgeKey(b){ return b==='🟢'?'g':b==='🟡'?'y':'r'; }
+function statusLabel(s){ var m={'OK':'已核验通过','NOT_FOUND':'条文不存在/未生效',
+  'TEMPORAL_DEPRECATED':'引用已废止法律','PARTIAL':'引述差异(待复核)',
+  'FABRICATED':'引述不符(待复核)','UNVERIFIABLE':'未核验节点'}; return m[s]||s; }
+
+function bar(label,n,p,k){ return '<div class="bar"><div class="blabel"><span>'+label+
+  '</span><span>'+n+' ('+p+'%)</span></div><div class="track"><div class="fill '+k+
+  '" style="width:'+p+'%"></div></div></div>'; }
+
+function renderSummary(){
+  var g=0,y=0,r=0; var law={};
+  DATA.forEach(function(d){ var c=d.result.counts; g+=c['🟢']||0; y+=c['🟡']||0; r+=c['🔴']||0;
+    d.result.items.forEach(function(it){ var k=it.law_canonical||it.raw_law; if(!law[k]) law[k]={g:0,y:0,r:0};
+      law[k][badgeKey(it.badge)]++; }); });
+  var total=g+y+r; var pct=function(n){ return total?Math.round(n/total*100):0; };
+  var bars=bar('🟢 已核验通过',g,pct(g),'g')+bar('🟡 待人工复核',y,pct(y),'y')+
+           bar('🔴 未通过核验',r,pct(r),'r');
+  var lawRows='';
+  Object.keys(law).sort().forEach(function(k){ var L=law[k];
+    lawRows+='<div class="lawrow"><span class="lname">'+esc(k)+'</span>'+
+      '<span class="lc g">🟢'+L.g+'</span><span class="lc y">🟡'+L.y+
+      '</span><span class="lc r">🔴'+L.r+'</span></div>'; });
+  document.getElementById('dash').innerHTML=
+    '<div class="kpis"><div class="kpi g"><div class="n">'+g+'</div><div>🟢 通过</div></div>'+
+    '<div class="kpi y"><div class="n">'+y+'</div><div>🟡 待复核</div></div>'+
+    '<div class="kpi r"><div class="n">'+r+'</div><div>🔴 未通过</div></div>'+
+    '<div class="kpi"><div class="n">'+total+'</div><div>引注总数</div></div></div>'+
+    '<div class="bars">'+bars+'</div><div class="lawbreak"><h3>按法律分布</h3>'+lawRows+'</div>';
+}
+
+function cardHtml(it){
+  var bc=badgeKey(it.badge); var extra=''; var q='';
+  if(it.ground_truth){ extra='<div class="gt"><span class="lbl">官方原文</span>'+
+    '<div class="gtxt">'+esc(it.ground_truth)+'</div></div>'; }
+  if(it.quoted){ q='<div class="qt"><span class="lbl">AI 引述</span>'+
+    '<div class="qtxt">'+esc(it.quoted)+'</div></div>'; }
+  return '<div class="card '+bc+'"><div class="ctop"><span class="bdg">'+it.badge+
+    '</span><span class="cit">《'+esc(it.raw_law)+'》第'+esc(it.article_no)+'条</span></div>'+
+    '<div class="st">'+statusLabel(it.status)+'</div><div class="note">'+esc(it.note)+
+    '</div>'+q+extra+'</div>';
+}
+
+function renderScenarios(){
+  var tabs='', bodies='';
+  DATA.forEach(function(d,i){ var active=i===0?' active':'';
+    tabs+='<button class="tab'+active+'" data-i="'+i+'">'+esc(d.scenario.title)+'</button>';
+    var cards=d.result.items.map(cardHtml).join(''); var c=d.result.counts;
+    bodies+='<div class="pane'+(i===0?' show':'')+'" data-i="'+i+'">'+
+      '<div class="metarow"><span>基准日 '+esc(d.result.as_of)+'</span>'+
+      '<span class="pill g">🟢'+c['🟢']+'</span><span class="pill y">🟡'+c['🟡']+
+      '</span><span class="pill r">🔴'+c['🔴']+'</span>'+
+      '<span class="overall">'+esc(d.result.overall)+'</span></div>'+
+      '<div class="scenario-desc">'+esc(d.scenario.scenario)+'</div>'+
+      '<details class="raw"><summary>AI 合规分析（原始输出）</summary><pre>'+esc(d.answer)+
+      '</pre></details><div class="cards">'+cards+'</div></div>'; });
+  document.getElementById('tabs').innerHTML=tabs;
+  document.getElementById('panes').innerHTML=bodies;
+  document.querySelectorAll('.tab').forEach(function(b){ b.addEventListener('click',function(){
+    var i=b.getAttribute('data-i');
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});
+    document.querySelectorAll('.pane').forEach(function(x){x.classList.remove('show');});
+    b.classList.add('active'); document.querySelector('.pane[data-i="'+i+'"]').classList.add('show');
+  }); });
+}
+
+function renderResult(res){
+  var c=res.counts; var cards=res.items.map(cardHtml).join('');
+  document.getElementById('liveOut').innerHTML=
+    '<div class="metarow"><span>基准日 '+esc(res.as_of)+'</span>'+
+    '<span class="pill g">🟢'+c['🟢']+'</span><span class="pill y">🟡'+c['🟡']+
+    '</span><span class="pill r">🔴'+c['🔴']+'</span><span class="overall">'+esc(res.overall)+
+    '</span></div><div class="cards">'+cards+'</div>';
+  document.getElementById('liveOut').classList.add('show');
+}
+
+function runVerify(){
+  var ans=document.getElementById('answer').value;
+  var asof=document.getElementById('as_of').value||'2026-08-01';
+  if(!ans.trim()){ alert('请先粘贴一段 AI 生成的合规分析（含《法律》第X条引注）'); return; }
+  document.getElementById('liveOut').innerHTML='<div class="loading">校验中…</div>';
+  fetch('/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({answer:ans,as_of_date:asof})})
+    .then(function(r){return r.json();})
+    .then(function(d){ if(d.error){ document.getElementById('liveOut').innerHTML=
+      '<div class="err">'+esc(d.error)+'</div>'; } else { renderResult(d); } })
+    .catch(function(e){ document.getElementById('liveOut').innerHTML=
+      '<div class="err">校验失败：'+esc(e)+'（需启动本地服务 python -m compliance_triangle.web）</div>'; });
+}
+
+function runModelVerify(){
+  var sc=document.getElementById('scenario');
+  if(!sc){ alert('本页面未启用实时模型（仅粘贴模式）。'); return; }
+  var scenario=sc.value;
+  var model=document.getElementById('model')?document.getElementById('model').value:'';
+  var asof=document.getElementById('as_of').value||'2026-08-01';
+  if(!scenario.trim()){ alert('请先填写合规场景'); return; }
+  document.getElementById('liveOut').innerHTML='<div class="loading">模型生成中…</div>';
+  fetch('/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({scenario:scenario,as_of_date:asof,model:model})})
+    .then(function(r){return r.json();})
+    .then(function(d){ if(d.error){ document.getElementById('liveOut').innerHTML=
+      '<div class="err">'+esc(d.error)+'</div>'; }
+      else { if(d.answer){ document.getElementById('answer').value=d.answer; }
+             renderResult(d.result); } })
+    .catch(function(e){ document.getElementById('liveOut').innerHTML=
+      '<div class="err">调用失败：'+esc(e)+'</div>'; });
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  renderSummary(); renderScenarios();
+  if(WITH_LIVE){
+    var rb=document.getElementById('runBtn'); if(rb){ rb.addEventListener('click',runVerify); }
+    var rmb=document.getElementById('runModelBtn'); if(rmb){ rmb.addEventListener('click',runModelVerify); }
+  }
+});
+</script>
+</body>
+</html>
