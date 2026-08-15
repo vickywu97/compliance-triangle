@@ -76,7 +76,7 @@ git clone https://github.com/vickywu97/legal-hallucination-bench.git ../legal-ha
 # 2) Offline demo (no API key / no network): run 5 built-in scenarios,
 #    generate a compliance memo + a static demo page
 python demo/run_demo.py
-# -> compliance memos: demo/output/S1..S5_*.md
+# -> compliance memos: demo/output/S1..S6_*.md
 # -> static demo page: docs/index.html  (double-click to open in a browser; zero-dep, offline)
 ```
 
@@ -87,7 +87,7 @@ The demo scenarios contain pre-built "hallucinated" answers, showing exactly how
 **A. Pure static demo page (recommended first look, double-click to use)**
 `docs/index.html` is a **self-contained, zero-external-dependency, offline-capable** single-file page:
 - Top "Verification overview": 🟢🟡🔴 count KPIs + ratio bars + breakdown by law;
-- 5 demo scenarios as tabs; each citation rendered as a colored card (🟢 pass / 🟡 review / 🔴 fail),
+- 6 demo scenarios as tabs; each citation rendered as a colored card (🟢 pass / 🟡 review / 🔴 fail),
   showing "AI quote vs. official text" side by side;
 - Just double-click to open in a file manager — **no server needed**.
 
