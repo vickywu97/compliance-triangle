@@ -5,8 +5,8 @@
 
 > 📦 **Two-repo portfolio · Product layer** — the foundation is [`legal-hallucination-bench` (private repo · access on request)](https://github.com/vickywu97/legal-hallucination-bench) (an offline benchmark that quantifies "AI legal-citation hallucination"). The full narrative / elevator pitch is in [`docs/PORTFOLIO.md` (private repo · access on request)](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md).
 
-> 🚀 **Live demo (self-contained static page)**: `docs/index.html` opens by double-click (no install / no network needed). It can also be deployed as a permanent public link:
-> - **GitHub Pages**: repo Settings → Pages → Source = `Deploy from a branch` → `master` branch, `/docs` folder. Once enabled, the address is **https://vickywu97.github.io/compliance-triangle/** (note: must be enabled first to go live; this `github.io` address is also typically unreachable from mainland China — the offline `docs/index.html` is the reliable fallback).
+> 🚀 **Live demo**: **https://vickywu97.github.io/compliance-triangle/** (✅ live, deployed via GitHub Pages from `master` / `docs`).
+> - **Offline**: `docs/index.html` opens by double-click (no install / no network needed; the `github.io` address is typically unreachable from mainland China — this file is the reliable fallback).
 > - Other static hosts (Vercel / Netlify / Cloudflare Pages): just upload `docs/index.html`.
 > Local server: `python3 -m compliance_triangle.web` (prefers the sibling Bench KB; auto-falls-back to the built-in vendored snapshot when cloned standalone).
 

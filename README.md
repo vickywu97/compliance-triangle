@@ -7,8 +7,8 @@
 
 > 📦 **双仓库作品集 · 产品篇** —— 地基是 [`legal-hallucination-bench`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench)（量化"AI 法律引注幻觉"的离线基准）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md)。
 
-> 🚀 **在线体验（自包含静态页）**：`docs/index.html` 双击即用（无需安装/联网）。也可部署为永久公开链接：
-> - **GitHub Pages**：仓库 Settings → Pages → Source 选 `Deploy from a branch` → `master` 分支、`/docs` 目录。启用后地址为 **https://vickywu97.github.io/compliance-triangle/** （注意：需先启用才会生效；且该 `github.io` 地址在中国大陆通常不可达，建议同时保留 `docs/index.html` 离线文件供直接打开）。
+> 🚀 **在线体验**：**https://vickywu97.github.io/compliance-triangle/** （✅ 已上线，GitHub Pages 部署自 `master` / `docs`）。
+> - **离线打开**：`docs/index.html` 双击即用（无需安装/联网；`github.io` 地址在中国大陆通常不可达，此文件是可靠替代）。
 > - 其他静态托管（Vercel / Netlify / Cloudflare Pages）直接上传 `docs/index.html` 即可。
 > 本地服务：`python3 -m compliance_triangle.web`（优先用同级 Bench KB；单独 clone 时自动降级为内置 vendor 快照）。
 

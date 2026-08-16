@@ -7,6 +7,10 @@
 
 ## Unreleased — 数据口径修正
 
+- **演示页可分享性与无障碍**：`docs/index.html`（含生成模板 `memo.py`）新增 Open Graph
+  与 `meta description` 标签（分享到 LinkedIn / 社交平台时显示标题+摘要卡片）；场景页签
+  补齐 ARIA 无障碍属性（`role="tablist"/"tab"/"tabpanel"`、`aria-selected`、`aria-controls`）。
+  README（中/英）在线体验段更新为「已上线」直链（Pages 已部署自 `master` / `docs`）。
 - **修正 VAT 法条文数误读**：此前 README / config 称「增值税法收录 38/41 条，第 39–41 条未入库」。
   实际《增值税法》共 **38 条**（主席令第四十一号公布，2026-01-01 施行）——"41" 是**公布令号**，
   并非条文数，故不存在第 39–41 条。KB 已全数逐字核验，8 部法均完整无缺漏。已同步更正

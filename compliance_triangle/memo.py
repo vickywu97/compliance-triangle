@@ -163,10 +163,12 @@ function cardHtml(it){
 
 function renderScenarios(){
   var tabs='', bodies='';
-  DATA.forEach(function(d,i){ var active=i===0?' active':'';
-    tabs+='<button class="tab'+active+'" data-i="'+i+'">'+esc(d.scenario.title)+'</button>';
+  DATA.forEach(function(d,i){ var active=i===0?' active':''; var sel=i===0?'true':'false';
+    tabs+='<button class="tab'+active+'" data-i="'+i+'" role="tab" id="tab-'+i+
+      '" aria-selected="'+sel+'" aria-controls="pane-'+i+'">'+esc(d.scenario.title)+'</button>';
     var cards=d.result.items.map(cardHtml).join(''); var c=d.result.counts;
-    bodies+='<div class="pane'+(i===0?' show':'')+'" data-i="'+i+'">'+
+    bodies+='<div class="pane'+(i===0?' show':'')+'" data-i="'+i+'" role="tabpanel" id="pane-'+i+
+      '" aria-labelledby="tab-'+i+'">'+
       '<div class="metarow"><span>基准日 '+esc(d.result.as_of)+'</span>'+
       '<span class="pill g">🟢'+c['🟢']+'</span><span class="pill y">🟡'+c['🟡']+
       '</span><span class="pill r">🔴'+c['🔴']+'</span>'+
@@ -178,9 +180,11 @@ function renderScenarios(){
   document.getElementById('panes').innerHTML=bodies;
   document.querySelectorAll('.tab').forEach(function(b){ b.addEventListener('click',function(){
     var i=b.getAttribute('data-i');
-    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');
+      x.setAttribute('aria-selected','false');});
     document.querySelectorAll('.pane').forEach(function(x){x.classList.remove('show');});
-    b.classList.add('active'); document.querySelector('.pane[data-i="'+i+'"]').classList.add('show');
+    b.classList.add('active'); b.setAttribute('aria-selected','true');
+    document.querySelector('.pane[data-i="'+i+'"]').classList.add('show');
   }); });
 }
 
@@ -275,6 +279,13 @@ _TPL = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="合规三角：法律·税务·知识产权三域 AI 合规助手。复用 legal-hallucination-bench 的 verify 引擎，为 AI 生成的每条法条引注盖 🟢通过 / 🟡待复核 / 🔴未通过 核验章。">
+<meta property="og:title" content="合规三角 · AI 法条引注核验演示">
+<meta property="og:description" content="法律·税务·IP 三域合规助手：内置含幻觉演示场景，__KB_ARTICLES__ 条已核验法条，为 AI 生成的每条法条引注盖 🟢🟡🔴 核验章。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vickywu97.github.io/compliance-triangle/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="compliance-triangle">
 <title>__TITLE__</title>
 <style>__CSS__</style>
 </head>
@@ -289,7 +300,7 @@ _TPL = """<!DOCTYPE html>
   <section class="block"><h2>核验总览</h2><div id="dash"></div></section>
   <section class="block">
     <h2>演示场景（内置含幻觉样本的场景）</h2>
-    <div id="tabs" class="tabs"></div>
+    <div id="tabs" class="tabs" role="tablist" aria-label="演示场景选择"></div>
     <div id="panes" class="panes"></div>
   </section>
   __LIVE_SECTION__
