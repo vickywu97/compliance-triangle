@@ -12,11 +12,11 @@
 
 **标题**：我把"AI 引用法条会胡说"这件事，做成了一个能实时拦它的产品
 
-做了十年法律 / 税务 / 知识产权，我现在在转 AI 法律产品。转的过程中我越来越确信一件事：
+做了六年法律实务，我现在在转 AI 法律产品。转的过程中我越来越确信一件事：
 **大模型在"引用法条"这个最基础的动作上，可靠性堪忧。**
 
 我先用一个离线基准量化了它——5 个国产模型、23 道带陷阱的题，在最宽松的尺度下，
-表现最好的模型仍有 **33%** 的法条引注是幻觉；而在最严格的"逐字复述"尺度下，
+表现最好的模型仍有 **33.3%** 的法条引注是幻觉；而在最严格的"逐字复述"尺度下，
 **8 个法域全军覆没，正确率 0%**。连付费旗舰都没好到哪去。
 
 光量化不够。所以我做了第二个东西——**合规三角**（Compliance Triangle），已经发布 v1.0.0。
@@ -46,9 +46,9 @@
 
 **Headline**: Shipping Compliance Triangle v1.0.0 — turning "AI cites law incorrectly" from a metric into a real-time guardrail.
 
-After a decade as a lawyer, tax agent, and patent attorney, I'm building AI legal products. My portfolio now has two linked repos:
+After six years in legal practice as a lawyer, tax agent, and patent attorney, I'm building AI legal products. My portfolio now has two linked repos:
 
-1. **legal-hallucination-bench** — an offline, expert-verified benchmark proving how badly LLMs quote Chinese statutes. On the most forgiving metric, even the best domestic model still hallucinates on **33%** of citations; on verbatim accuracy across 8 law domains, the rate is **0%**.
+1. **legal-hallucination-bench** — an offline, expert-verified benchmark proving how badly LLMs quote Chinese statutes. On the most forgiving metric, even the best domestic model still hallucinates on **33.3%** of citations; on verbatim accuracy across 8 law domains, the rate is **0%**.
 2. **compliance-triangle** (v1.0.0, just released) — the product layer. It takes the *same* verification engine and turns "measuring hallucination" into "blocking it in real time."
 
 Paste any LLM-generated compliance analysis, and every statute citation gets a 🟢 / 🟡 / 🔴 verdict:
@@ -80,7 +80,7 @@ Repos:
 🟢通过 / 🟡待复核（概括漏但书）/ 🔴未通过（虚构条号或引用已废止法）。
 
 三个数字说明它解决的痛点：
-- 我另一个地基仓库测过：5 国产模型、23 道陷阱题，**最宽松尺度下最优模型仍有 33% 引注幻觉**；
+- 我另一个地基仓库测过：5 国产模型、23 道陷阱题，**最宽松尺度下最优模型仍有 33.3% 引注幻觉**；
 - 最严格"逐字"尺度，**8 法域正确率全 0%**；
 - 合规三角底层是 **2327 条专家核验的现行法条**，离线、零依赖、32 测试全绿。
 
