@@ -28,7 +28,8 @@ _CN_RE = re.compile(
     r"(?P<num>[0-9一二三四五六七八九十百千零两]+)\s*条?"
     r"(?P<zhi>(?:之[一二三四五六七八九])?)"
     r"|(?P<cont>(?:、|，|,|；|;|及|与|和|以及)\s*第\s*"
-    r"(?P<cnum>[0-9一二三四五六七八九十百千零两]+)\s*条?)"
+    r"(?P<cnum>[0-9一二三四五六七八九十百千零两]+)\s*条?"
+    r"(?P<czhi>(?:之[一二三四五六七八九])?))"
     r"|《(?P<law3>[^》]+)》\s*"
     r"(?P<num3>[0-9一二三四五六七八九十百千零两]+)\s*"
     r"(?P<zhi3>(?:之[一二三四五六七八九])?)"
@@ -131,13 +132,13 @@ def extract_citations(text: str) -> list:
                 zhi = m.group("zhi") or ""
                 raw_num = f"{num}{zhi}"
             elif m.group("cont") is not None:
-                # continuation (、第X条) — reuse the preceding law name
+                # continuation (、第X条 [之一]) — reuse the preceding law name
                 if last_law is None:
                     continue  # orphan continuation with no anchor; skip
                 law_name = last_law
                 num = m.group("cnum")
-                zhi = ""
-                raw_num = num
+                zhi = m.group("czhi") or ""
+                raw_num = f"{num}{zhi}"
             else:
                 # alt3: no 第  (《公司法》第一百四十二条)
                 law_name = m.group("law3").strip()
