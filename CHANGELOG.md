@@ -19,6 +19,34 @@
   `用户验证-合规三角.md`（填补 README `## Validated by` 的引用空链接）；修正 README 演示场景数
   为 **6 个**（S1–S6，原误写 5）；同步中英 README 的 `S1..S5` → `S1..S6` 与场景计数。
 
+## v2.0.0 (2026-09-01) — 多用户 SaaS
+
+> 把 `compliance-triangle` 从「本地演示壳」升级为可公开部署的多用户 SaaS。核验引擎（`verify` / `live` / KB 加载）**零改动**，仅新增一层 SaaS 基础设施（账号 / 存储 / 配额 / API / 前端），并已验证的核验逻辑不被破坏。
+
+### 新增能力
+- **账号体系**：注册 / 登录 / 登出，口令用 PBKDF2-HMAC-SHA256（per-user salt、20 万次迭代）存储，服务端会话、登出即失效。
+- **核验历史持久化**：每次 `/api/verify`、`/api/analyze` 的结果落库，用户可在 UI / API 查看、回看、删除。
+- **租户隔离**：用户 A 绝对无法读取 / 删除用户 B 的记录（测试 `test_saas_api.py` 专门验证跨用户越权被拒）。
+- **按月配额**：每个账号有月度核验额度，调用前扣减、超限拒绝，UI 显示用量进度。
+- **API Key**：用户可自发生成 / 吊销 Bearer 令牌，供第三方系统调用（等同会话 token 鉴权）。
+- **HTTP API**：`/api/auth/*`、`/api/verify`、`/api/analyze`、`/api/analyses[/<id>]`、`/api/keys[/<key>]`、`/healthz`，JSON 入参、标准状态码。
+- **零构建前端 SPA**：原生 JS 单页应用（注册/登录 → 粘贴核验 → 历史/用量 → API Key），自包含、无外部 CDN 依赖、`/` 与 `/demo` 共存。
+
+### 工程化
+- 纯标准库实现（`sqlite3` / `hashlib` / `http.server`），**零第三方依赖**，构建无需联网。
+- 新增 `compliance_triangle/server/`：`store.py`（SQLite 数据层）、`auth.py`（认证）、`app.py`（HTTP API + 鉴权 + 配额 + 限流）、`static/` 前端。
+- 测试套件 32 → **106**（`tests/test_saas_*.py` 覆盖认证 / 存储 / 配额 / API 端到端 + 租户隔离），原 34 个测试继续全绿。
+- 部署资产：`Dockerfile`、`render.yaml`（Render Blueprint 一键部署）、`docs/DEPLOY.md`（本地 / Docker / Render / 环境变量 / 数据持久化 / 已知限制）。
+
+### 已知限制（诚实声明）
+- **冷启动**：免费档实例闲置后休眠，首次访问约 30–60 秒。
+- **单实例**：SQLite + 进程内锁仅适用单实例；水平扩容需换外部数据库（改 `store.py`）。
+- **限流进程内**：`RateLimiter` 在内存，多实例不共享。
+- **身份系统作品集级**：无邮箱验证 / 找回密码 / MFA。
+- **海外节点**：Render 在境外，中国大陆访问可能偏慢；`/analyze` 调付费模型，部署模式强制登录且在调用前扣配额。
+
+---
+
 ## v1.0.0 (2026-08-11) — 三证合一的 AI 合规助手（首个公开发布）
 
 > 版本映射：`v1.0.0` 标签落在首个公开发布 HEAD（`ba3a10b`），涵盖 Phase 1–3 全部工作 +

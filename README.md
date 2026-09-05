@@ -5,7 +5,7 @@
 > 企业三域合规助手（法律合规 · 税务合规 · 知识产权合规），由**同一人**——律师 / 税务师 / 专利代理师——签字背书。
 > 所有 AI 生成的法条引注都经过**存在性 / 时效性 / 内容匹配**三层校验，不过门禁的红框标出。
 
-> 📦 **双仓库作品集 · 产品篇** —— 地基是 [`legal-hallucination-bench`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench)（量化"AI 法律引注幻觉"的离线基准）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md)。
+> 📦 **双仓库作品集 · 产品篇** —— 地基是 [`legal-hallucination-bench`（开源仓库 · MIT）](https://github.com/vickywu97/legal-hallucination-bench)（量化"AI 法律引注幻觉"的离线基准）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`（开源仓库 · MIT）](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md)。
 
 > 🚀 **在线体验**：**https://vickywu97.github.io/compliance-triangle/** （✅ 已上线，GitHub Pages 部署自 `master` / `docs`）。
 > - **离线打开**：`docs/index.html` 双击即用（无需安装/联网；`github.io` 地址在中国大陆通常不可达，此文件是可靠替代）。
@@ -16,7 +16,7 @@
 
 ## 产品叙事（作品集核心）
 
-我先用量化基准 [`legal-hallucination-bench`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench)
+我先用量化基准 [`legal-hallucination-bench`（开源仓库 · MIT）](https://github.com/vickywu97/legal-hallucination-bench)
 **证明了 AI 在法律引注上不可信**（5 模型 HVI 33.3%–54.2%，8 法域逐字 EXACT 合规率全为 0%）；
 然后用**同一套 verify 引擎**构建了合规三角——让 AI 生成的每条法条引注都经过校验，
 **不过门禁的红框标出**。这不是「会用 AI」，而是「知道 AI 哪里会出错，并设计了系统来防止」。
@@ -50,6 +50,31 @@
 > 与地基仓库的"地基 → 产品"关系图：
 > ![作品集架构](./docs/portfolio_architecture.svg)
 
+## 多用户 SaaS 模式（v2）
+
+合规三角已从「本地演示壳」升级为**多用户 SaaS**：账号注册 / 登录、核验历史持久化、按月配额、API Key、公开部署一步到位。核验引擎（verify）**一行未改**，全部 72 个新增测试覆盖认证、租户隔离、配额扣减、API Key 全生命周期——106 个测试全绿。
+
+### 本地运行（多用户）
+```bash
+python3 -m compliance_triangle.web          # http://127.0.0.1:8000
+```
+浏览器打开 `/` 即多用户单页应用：注册 / 登录 → 粘贴 AI 法律意见 → 🟢🟡🔴 核验报告 → 历史与用量查看 → 生成 API Key。
+
+### HTTP API（可供第三方系统调用）
+所有写操作需 `Authorization: Bearer <token>`（注册返回的会话 token，或用户自建的 API Key）。
+- `POST /api/auth/register` · `POST /api/auth/login` · `GET /api/me`
+- `POST /api/verify` · `POST /api/analyze`（付费模型，需登录 + 配额）
+- `GET /api/analyses` · `GET /api/analyses/<id>` · `DELETE /api/analyses/<id>`
+- `POST /api/keys` · `DELETE /api/keys/<key>` · `GET /healthz`
+
+### 部署（免费 PaaS，零第三方依赖）
+仓库自带 `Dockerfile` 与 `render.yaml`，详见 [docs/DEPLOY.md](./docs/DEPLOY.md)：
+- **Render 免费档**：New → Blueprint，读 `render.yaml` 一键部署（约 30s 冷启动）；
+- **Docker 任意平台**：`docker build -t ct . && docker run -p 8000:10000 -e HOST=0.0.0.0 ct`；
+- **HuggingFace Spaces / 其他容器平台**：同 Docker 镜像。
+
+> 身份系统为**作品集级**：口令用 PBKDF2-SHA256（per-user salt、20 万次迭代）存储，会话为服务端行、登出即失效；暂无邮箱验证 / 找回密码 / MFA。请勿用于承载真实客户敏感数据。
+
 ## 免责声明
 > ⚠️ 本工具（合规三角）仅对 AI 生成的法条引注做**存在性 / 时效性 / 内容匹配**的自动化校验，**不构成法律意见、税务意见或专利意见**，也不能替代执业律师、税务师、专利代理师的专业判断。校验结果（🟢🟡🔴）仅反映引注与官方法条文本的匹配情况，不保证任何合规结论的正确性或适用性；使用者应就具体事项咨询持证专业人士。工具引用的法条文本来自公开官方来源，评测结论为自动化判分结果，可能因法条更新或提取误差存在偏差，请以官方最新公布文本为准。
 
@@ -57,7 +82,7 @@
 
 ```bash
 # 1) 把 Bench 仓库作为同级目录克隆（或设置环境变量指向它）
-#    注：Bench 为私有仓库，需先获授权并配置 Git 凭证（SSH 或 token）才能克隆
+#    注：Bench 现已开源（MIT），可直接克隆，无需授权
 git clone https://github.com/vickywu97/legal-hallucination-bench.git ../legal-hallucination-bench
 
 # 2) 离线演示（无需 API Key / 网络）：跑 5 个内置场景，生成合规备忘录 + 静态展示页
@@ -154,6 +179,7 @@ KB 计数（8 部法 / 2327 条）、Web 渲染降级与实时模型可用性门
 - 实时调用 LLM 并自动校验（`compliance_triangle/live.py` + Web `/analyze` 端点 + CLI）✅
 - 引注解析边界加固 + 零依赖测试套件（`tests/`）✅
 - 可信度修复（空回答误报🟢、KB 缺失优雅降级、VAT 覆盖标注、hero 计数）✅
+- Phase 4（多用户 SaaS）：账号/会话/API Key、核验历史持久化、按月配额、Bearer 鉴权、Render/Docker 一键部署、零依赖测试套件扩至 106 个 ✅
 
 ## 授权
 

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>合规三角 · AI 法条引注核验</title>
+<meta name="description" content="把 AI 生成的法律意见粘贴进来，逐条核验引注的真实性、时效性与内容一致性，不过门禁的红框标出。">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">△</span>
+    <div>
+      <strong>合规三角</strong>
+      <span class="sub">法律 · 税务 · 知识产权 三域引注核验</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span id="kbBadge" class="kb-badge">加载中…</span>
+    <span id="userChip" class="user-chip hidden"></span>
+    <button id="logoutBtn" class="btn-ghost hidden">退出</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ 登录 / 注册 ============ -->
+  <section id="view-auth" class="auth-wrap">
+    <div class="auth-card">
+      <h1 id="authTitle">登录</h1>
+      <p class="muted" id="authSub">用邮箱登录以保存核验历史与用量配额</p>
+
+      <label>邮箱
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+      </label>
+
+      <label id="nameField" class="hidden">昵称（可选）
+        <input type="text" id="displayName" placeholder="张三" autocomplete="nickname">
+      </label>
+
+      <label>密码
+        <input type="password" id="password" placeholder="至少 8 位" autocomplete="current-password">
+      </label>
+
+      <button id="authSubmit" class="btn-primary">登录</button>
+
+      <p class="auth-switch">
+        <span id="switchText">还没有账号？</span>
+        <a href="#" id="switchLink">注册</a>
+      </p>
+
+      <p id="authError" class="error hidden"></p>
+    </div>
+  </section>
+
+  <!-- ============ 主应用 ============ -->
+  <section id="view-app" class="hidden">
+    <nav class="tabs">
+      <button class="tab active" data-tab="workspace">核验工作区</button>
+      <button class="tab" data-tab="history">历史记录</button>
+      <button class="tab" data-tab="account">账户与用量</button>
+    </nav>
+
+    <!-- ---- 工作区 ---- -->
+    <div id="tab-workspace" class="tab-panel">
+      <div class="grid-2">
+        <div class="panel">
+          <h2>粘贴 AI 生成的法律意见</h2>
+          <textarea id="answerInput" rows="14"
+            placeholder="例如：&#10;依据《公司法》第142条，公司不得收购本公司股份……&#10;依据《增值税法》第15条，进项税额可以抵扣……"></textarea>
+
+          <div class="row">
+            <label class="inline">核验基准日
+              <input type="date" id="asOf" value="2026-08-01">
+            </label>
+            <span class="spacer"></span>
+            <button id="verifyBtn" class="btn-primary">开始核验</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>核验结论</h2>
+          <div id="resultBox" class="empty">还没有核验记录。粘贴内容后点「开始核验」。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- 历史 ---- -->
+    <div id="tab-history" class="tab-panel hidden">
+      <div class="panel">
+        <h2>历史记录</h2>
+        <div id="historyBox" class="empty">加载中…</div>
+      </div>
+    </div>
+
+    <!-- ---- 账户 ---- -->
+    <div id="tab-account" class="tab-panel hidden">
+      <div class="grid-2">
+        <div class="panel">
+          <h2>用量与配额</h2>
+          <div id="usageBox" class="empty">加载中…</div>
+        </div>
+        <div class="panel">
+          <h2>API 密钥</h2>
+          <p class="muted small">用于脚本化调用。密钥只显示一次，请立即保存。</p>
+          <div class="row">
+            <input type="text" id="keyLabel" placeholder="密钥标签，如 ci / local">
+            <button id="createKeyBtn" class="btn-secondary">新建密钥</button>
+          </div>
+          <div id="keyBox" class="empty">加载中…</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="disclaimer">
+  <strong>免责声明</strong>
+  <p>本工具仅对 AI 生成的法条引注做<strong>存在性 / 时效性 / 内容匹配</strong>的自动化校验，<strong>不构成法律意见、税务意见或专利意见</strong>，也不能替代执业律师、税务师、专利代理师的专业判断。🟢🟡🔴 仅反映引注与官方法条文本的匹配情况，不保证任何合规结论的正确性或适用性；使用者应就具体事项咨询持证专业人士。法条文本来自公开官方来源，可能因法条更新或提取误差存在偏差，请以官方最新公布文本为准。</p>
+  <p class="small">核验引擎与法条库来自 <code>legal-hallucination-bench</code>（开源 · MIT）。</p>
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>

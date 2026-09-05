@@ -1,0 +1,33 @@
+# Render Blueprint — one-click deploy of compliance-triangle as a multi-tenant SaaS.
+#
+# If your Render plan does not support Disks, delete the `disk:` block below.
+# The service still works; the SQLite file just resets on every restart
+# (see docs/DEPLOY.md § 数据持久化).
+services:
+  - type: web
+    name: compliance-triangle
+    runtime: docker
+    plan: free
+    branch: master
+    healthCheckPath: /healthz
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "10000"
+      - key: COMPLIANCE_TRIANGLE_DB
+        value: /var/data/saas.db
+      # Optional: only needed for the live-LLM "analyze" feature.
+      # Set these in the Render dashboard (never commit keys).
+      # - key: DEEPSEEK_API_KEY
+      #   sync: false
+      # - key: ZHIPU_API_KEY
+      #   sync: false
+      # - key: DASHSCOPE_API_KEY
+      #   sync: false
+      # - key: MOONSHOT_API_KEY
+      #   sync: false
+    disk:
+      name: compliance-triangle-data
+      mountPath: /var/data
+      sizeGB: 1

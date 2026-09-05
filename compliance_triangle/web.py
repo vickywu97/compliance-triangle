@@ -1,138 +1,52 @@
-"""Zero-dependency local web app for compliance-triangle (stdlib only).
+"""Unified entry point for compliance-triangle (stdlib only).
 
-Serves a self-contained HTML showcase of the built-in demo scenarios and
-provides a live ``/verify`` endpoint that runs the Bench verify engine on a
-pasted LLM answer. No third-party packages — only the Python standard library.
+Historically this module *was* the server: a ~140-line ``BaseHTTPRequestHandler``
+that served a pre-generated showcase and two unauthenticated endpoints. The
+server now lives in :mod:`compliance_triangle.server.app`, which adds accounts,
+persistence and quotas while keeping the same stdlib-only constraint.
 
-Usage:
-    python -m compliance_triangle.web            # http://127.0.0.1:8000
+This module is kept as the documented entry point so existing commands and
+docs keep working::
+
+    python -m compliance_triangle.web          # http://127.0.0.1:8000
     PORT=8080 python -m compliance_triangle.web
+    HOST=0.0.0.0 python -m compliance_triangle.web   # deployed mode
+
+Routes (see ``server.app`` for the full list):
+    /               the SaaS single-page app
+    /demo           the original pre-generated offline showcase
+    /healthz        health check
+    /api/*          JSON API (auth, verify, analyze, history, keys)
+    /verify         legacy unauthenticated single-shot verification
+    /analyze        legacy LLM analysis (auth required in deployed mode)
 """
 from __future__ import annotations
 
-import json
 import os
 import sys
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
-
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if REPO_ROOT not in sys.path:
-    sys.path.insert(0, REPO_ROOT)
-
-from compliance_triangle import config, kb
-from compliance_triangle.verify_integration import verify_answer
-from compliance_triangle.memo import build_report_html
-from compliance_triangle.runner import build_demo_data
-from compliance_triangle import live as live_mod
-
-# Load the Bench KB at startup, but NEVER let a missing Bench repo crash the
-# whole server. If the KB can't be found, we still serve the (empty) offline
-# showcase with a clear notice, and /verify returns 503 instead of 500.
-KB_AVAILABLE = True
-KB_ERROR = ""
-LAWS = None
-DEMO_DATA = []
-KB_LAW_COUNT = 0
-KB_ARTICLE_COUNT = 0
-try:
-    config.ensure_bench_importable()
-    LAWS = kb.load_kb()
-    DEMO_DATA = build_demo_data(LAWS)
-    # LAWS is keyed by name/code/alias, so len(LAWS) is NOT the law count.
-    KB_LAW_COUNT = kb.count_laws(LAWS)
-    KB_ARTICLE_COUNT = kb.count_articles(LAWS)
-except Exception as e:  # noqa: BLE001 - bench missing must not crash the server
-    KB_AVAILABLE = False
-    KB_ERROR = str(e)
 
 
-class Handler(BaseHTTPRequestHandler):
-    def _send(self, code: int, body, ctype: str = "text/html; charset=utf-8"):
-        if isinstance(body, str):
-            body = body.encode("utf-8")
-        self.send_response(code)
-        self.send_header("Content-Type", ctype)
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+def main(argv: list | None = None) -> int:  # noqa: D401 - CLI entry point
+    argv = list(sys.argv[1:] if argv is None else argv)
+    # Deferred import: keeps `python -c "import compliance_triangle.web"` cheap
+    # and avoids loading the 1.6 MB KB unless we are actually serving.
+    from compliance_triangle.server.app import run_server
 
-    def do_GET(self):
-        p = urlparse(self.path).path
-        if p in ("/", "/index.html"):
-            notice = None
-            if not KB_AVAILABLE:
-                notice = ("基准库 legal-hallucination-bench 未加载，展示页为离线结构；"
-                          "实时校验 /verify 暂不可用。请克隆同级仓库或设置环境变量 "
-                          "COMPLIANCE_TRIANGLE_BENCH 指向它。")
-            live_models = []
-            if KB_AVAILABLE:
-                try:
-                    live_models = live_mod.live_models()
-                except Exception:  # noqa: BLE001 - never block the page render
-                    live_models = []
-            html = build_report_html(DEMO_DATA, with_live=KB_AVAILABLE,
-                                     kb_laws=KB_LAW_COUNT,
-                                     kb_articles=KB_ARTICLE_COUNT,
-                                     notice=notice,
-                                     caveats=config.COVERAGE_CAVEATS,
-                                     live_models=live_models)
-            self._send(200, html)
-        else:
-            self._send(404, "Not Found")
-
-    def do_POST(self):
-        p = urlparse(self.path).path
-        if p in ("/verify", "/analyze"):
-            if not KB_AVAILABLE:
-                self._send(503, json.dumps(
-                    {"error": f"基准库未加载，无法核验：{KB_ERROR}"}, ensure_ascii=False),
-                    "application/json; charset=utf-8")
-                return
-            try:
-                length = int(self.headers.get("Content-Length", 0))
-                raw = self.rfile.read(length) if length else b"{}"
-                payload = json.loads(raw.decode("utf-8") or "{}")
-                as_of = payload.get("as_of_date") or "2026-08-01"
-                if p == "/verify":
-                    answer = payload.get("answer", "")
-                    result = verify_answer("LIVE", answer, as_of, LAWS)
-                    self._send(200, json.dumps(result, ensure_ascii=False),
-                               "application/json; charset=utf-8")
-                else:  # /analyze — call a live model, then verify its answer
-                    scenario = payload.get("scenario", "")
-                    model = payload.get("model", "")
-                    if not scenario.strip():
-                        self._send(400, json.dumps({"error": "缺少 scenario 字段"},
-                                                   ensure_ascii=False),
-                                   "application/json; charset=utf-8")
-                        return
-                    answer, result = live_mod.analyze(scenario, as_of, model, LAWS)
-                    self._send(200, json.dumps({"answer": answer, "result": result},
-                                               ensure_ascii=False),
-                               "application/json; charset=utf-8")
-            except Exception as e:  # noqa: BLE001 - surface errors to client
-                self._send(500, json.dumps({"error": str(e)}, ensure_ascii=False),
-                           "application/json; charset=utf-8")
-        else:
-            self._send(404, "Not Found")
-
-    def log_message(self, *args):  # quiet
-        pass
-
-
-def main() -> int:
-    port = int(os.environ.get("PORT", "8000"))
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    print(f"合规三角 · 本地服务已启动: http://127.0.0.1:{port}")
-    print(f"  - KB: {KB_LAW_COUNT} 部法 / {KB_ARTICLE_COUNT} 条（来自 legal-hallucination-bench）")
-    print(f"  - 演示场景: {len(DEMO_DATA)} 个")
-    print("  - 按 Ctrl+C 停止")
+    host = os.environ.get("HOST") or "127.0.0.1"
     try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print("\n[stop] 服务已停止")
-    return 0
+        port = int(os.environ.get("PORT") or 8000)
+    except ValueError:
+        print("[error] PORT 必须是数字", file=sys.stderr)
+        return 2
+    if argv:
+        try:
+            port = int(argv[0])
+        except ValueError:
+            print(f"[error] 端口号无效: {argv[0]}", file=sys.stderr)
+            return 2
+
+    return run_server(host=host, port=port,
+                      db_path=os.environ.get("COMPLIANCE_TRIANGLE_DB"))
 
 
 if __name__ == "__main__":
