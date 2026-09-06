@@ -230,6 +230,52 @@
     });
   }
 
+  /* ---------------- file upload verify ---------------- */
+  function verifyFile() {
+    var input = $("fileInput");
+    var file = input.files && input.files[0];
+    var status = $("fileStatus");
+    if (!file) {
+      status.textContent = "请先选择要上传的文件。";
+      status.style.color = "var(--red)";
+      return;
+    }
+    var btn = $("verifyFileBtn");
+    btn.disabled = true;
+    status.textContent = "正在解析并逐条核验…";
+    status.style.color = "";
+
+    var fd = new FormData();
+    fd.append("file", file, file.name);
+    var asOf = $("asOf").value || "2026-08-01";
+    fd.append("as_of_date", asOf);
+
+    // Logged-in users hit the authenticated endpoint (consumes quota, saves
+    // history); anonymous local demo falls back to the legacy endpoint.
+    var path = token ? "/api/verify-file" : "/verify-file";
+    var opts = { method: "POST", headers: {}, body: fd };
+    if (token) { opts.headers["Authorization"] = "Bearer " + token; }
+
+    fetch(path, opts).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) {
+        if (!r.ok) { throw new Error(data.error || ("HTTP " + r.status)); }
+        if (data.result) { renderResult(data.result); }
+        status.textContent = "已核验「" + (data.filename || file.name) +
+          "」：" + (data.chars || 0) + " 字，" +
+          ((data.result.counts["\u{1F7E2}"] || 0) + " 通过 / " +
+           data.result.counts["\u{1F7E1}"] + " 待复核 / " +
+           data.result.counts["\u{1F534}"] + " 未通过");
+        status.style.color = "";
+        if (token && data.usage) { state.usage = data.usage; renderUsage(); loadHistory(); }
+      });
+    }).catch(function (e) {
+      status.textContent = "核验失败：" + e.message;
+      status.style.color = "var(--red)";
+    }).then(function () {
+      btn.disabled = false;
+    });
+  }
+
   /* ---------------- history ---------------- */
   function loadHistory() {
     api("GET", "/api/analyses?limit=50").then(function (data) {
@@ -339,6 +385,7 @@
     });
     $("logoutBtn").addEventListener("click", logout);
     $("verifyBtn").addEventListener("click", verify);
+    $("verifyFileBtn").addEventListener("click", verifyFile);
     $("createKeyBtn").addEventListener("click", createKey);
     Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) {
       t.addEventListener("click", function () { switchTab(t.getAttribute("data-tab")); });

@@ -78,6 +78,17 @@
             <span class="spacer"></span>
             <button id="verifyBtn" class="btn-primary">开始核验</button>
           </div>
+
+          <details class="upload-box">
+            <summary>或上传文档批量核验（.txt / .md / .docx）</summary>
+            <p class="muted small">上传整篇法律意见 / 合同 / 备忘录，系统自动抽取其中全部
+              《法律》第X条 引注并逐条核验。.docx 在服务器端解析，无需本机安装软件。</p>
+            <div class="row">
+              <input type="file" id="fileInput" accept=".txt,.md,.markdown,.json,.csv,.docx">
+              <button id="verifyFileBtn" class="btn-secondary">上传并核验</button>
+            </div>
+            <div id="fileStatus" class="small muted"></div>
+          </details>
         </div>
 
         <div class="panel">

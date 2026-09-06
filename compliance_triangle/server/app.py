@@ -15,6 +15,7 @@ Accounts:
 
 Product (authenticated; each call consumes monthly quota):
     POST   /api/verify       {answer, as_of_date?}       -> 🟢🟡🔴 report
+    POST   /api/verify-file  multipart file | {text,filename?} -> doc-level 🟢🟡🔴 report
     POST   /api/analyze      {scenario, model?, as_of?}  -> LLM answer + report
     GET    /api/analyses     history (tenant-scoped)
     GET    /api/analyses/<id>
@@ -53,6 +54,9 @@ from compliance_triangle import live as live_mod
 from compliance_triangle.memo import build_report_html
 from compliance_triangle.runner import build_demo_data
 from compliance_triangle.verify_integration import verify_answer
+from compliance_triangle.doc_extract import (
+    parse_multipart, extract_text, UnsupportedFormat,
+)
 from compliance_triangle.server import auth as auth_mod
 from compliance_triangle.server import store
 
@@ -180,15 +184,42 @@ class Handler(BaseHTTPRequestHandler):
         self._json(code, {"error": message})
 
     def _body(self) -> Dict:
-        try:
-            length = int(self.headers.get("Content-Length", 0))
-        except (TypeError, ValueError):
-            length = 0
-        raw = self.rfile.read(length) if length else b"{}"
+        raw = self._body_bytes()
         try:
             return json.loads(raw.decode("utf-8") or "{}")
         except (ValueError, UnicodeDecodeError):
             return {}
+
+    def _body_bytes(self) -> bytes:
+        # Cache: the request body can only be read once from the socket. Several
+        # handlers (file upload: extract text + read as_of_date) need it twice,
+        # and a second raw read on an exhausted stream would BLOCK indefinitely.
+        cached = getattr(self, "_cached_body_bytes", None)
+        if cached is not None:
+            return cached
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+        except (TypeError, ValueError):
+            length = 0
+        self._cached_body_bytes = self.rfile.read(length) if length else b""
+        return self._cached_body_bytes
+
+    def _extract_upload_text(self) -> tuple:
+        """Return (text, filename, source) from either multipart/form-data or a
+        JSON ``{text, filename?}`` body. Used by the file-verify endpoints."""
+        ctype = self.headers.get("Content-Type", "")
+        if "multipart/form-data" in ctype:
+            boundary = ctype.split("boundary=")[-1].strip().strip('"')
+            parts = parse_multipart(self._body_bytes(), boundary)
+            for p in parts:
+                if p["name"] in ("file", "answer") and p["data"]:
+                    fn = p.get("filename") or "upload.bin"
+                    return extract_text(fn, p["data"]), fn, "file"
+            return "", "", "file"
+        # JSON fallback for API clients that already have plain text.
+        payload = self._body()
+        text = payload.get("text") or payload.get("answer") or ""
+        return text, payload.get("filename") or "", "json"
 
     def _client_ip(self) -> str:
         return self.headers.get("X-Forwarded-For", "").split(",")[0].strip() \
@@ -296,6 +327,8 @@ class Handler(BaseHTTPRequestHandler):
         # ---------------- product ---------------- #
         if method == "POST" and path == "/api/verify":
             return self._api_verify()
+        if method == "POST" and path == "/api/verify-file":
+            return self._api_verify_file()
         if method == "POST" and path == "/api/analyze":
             return self._api_analyze()
         if method == "GET" and path == "/api/analyses":
@@ -314,6 +347,8 @@ class Handler(BaseHTTPRequestHandler):
         # ---------------- legacy local API ---------------- #
         if method == "POST" and path == "/verify":
             return self._legacy_verify()
+        if method == "POST" and path == "/verify-file":
+            return self._legacy_verify_file()
         if method == "POST" and path == "/analyze":
             return self._legacy_analyze()
 
@@ -408,6 +443,44 @@ class Handler(BaseHTTPRequestHandler):
                                       title, answer, "", as_of, "", result)
             summary = store.usage_summary(self.ctx.conn, user)
         return self._json(200, {"id": aid, "result": result, "usage": summary})
+
+    def _api_verify_file(self):
+        user = self._require_user()
+        if user is None:
+            return
+        if not self.ctx.kb_available:
+            return self._error(503, f"基准库未加载，无法核验：{self.ctx.kb_error}")
+        if not self._consume_quota(user):
+            return
+        try:
+            text, filename, _src = self._extract_upload_text()
+        except UnsupportedFormat as e:
+            return self._error(415, str(e))
+        if not text.strip():
+            return self._error(400, "上传文件中未解析出可核验的文本内容")
+        as_of = self._json_body_safe().get("as_of_date") or DEFAULT_AS_OF
+        result = verify_answer("FILE", text, as_of, self.ctx.laws)
+        title = (filename or "上传文档")[:120]
+        with store.db_lock():
+            aid = store.save_analysis(self.ctx.conn, int(user["id"]), "verify-file",
+                                      title, text, "", as_of, "", result)
+            summary = store.usage_summary(self.ctx.conn, user)
+        return self._json(200, {
+            "id": aid, "filename": filename, "chars": len(text),
+            "result": result, "usage": summary,
+        })
+
+    def _json_body_safe(self) -> Dict:
+        # For multipart uploads the as_of_date may arrive as a separate field;
+        # fall back to an empty dict when the body isn't JSON.
+        ctype = self.headers.get("Content-Type", "")
+        if "multipart/form-data" in ctype:
+            boundary = ctype.split("boundary=")[-1].strip().strip('"')
+            for p in parse_multipart(self._body_bytes(), boundary):
+                if p["name"] == "as_of_date" and p["data"]:
+                    return {"as_of_date": p["data"].decode("utf-8", "replace").strip()}
+            return {}
+        return self._body()
 
     def _api_analyze(self):
         user = self._require_user()
@@ -515,6 +588,22 @@ class Handler(BaseHTTPRequestHandler):
         as_of = payload.get("as_of_date") or DEFAULT_AS_OF
         result = verify_answer("LIVE", answer, as_of, self.ctx.laws)
         return self._json(200, result)
+
+    def _legacy_verify_file(self):
+        if not self.ctx.kb_available:
+            return self._json(503, {"error": f"基准库未加载，无法核验：{self.ctx.kb_error}"},
+                              {"Content-Type": "application/json; charset=utf-8"})
+        try:
+            text, filename, _src = self._extract_upload_text()
+        except UnsupportedFormat as e:
+            return self._json(415, {"error": str(e)},
+                              {"Content-Type": "application/json; charset=utf-8"})
+        if not text.strip():
+            return self._json(400, {"error": "上传文件中未解析出可核验的文本内容"},
+                              {"Content-Type": "application/json; charset=utf-8"})
+        as_of = self._json_body_safe().get("as_of_date") or DEFAULT_AS_OF
+        result = verify_answer("FILE", text, as_of, self.ctx.laws)
+        return self._json(200, {"filename": filename, "chars": len(text), "result": result})
 
     def _legacy_analyze(self):
         user = self._current_user()
