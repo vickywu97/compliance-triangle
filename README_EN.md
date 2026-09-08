@@ -18,7 +18,7 @@
 
 I'm a lawyer + tax agent + patent attorney **building AI legal products**. This repo is the *product layer* of my portfolio: it turns the hallucination benchmark into a working tool that catches AI's bad statute citations in real time.
 
-- I first **proved** (via [`legal-hallucination-bench` (private repo · access on request)](https://github.com/vickywu97/legal-hallucination-bench)) that AI cannot be trusted on legal citations: across **5 Chinese LLMs × 23 trap questions**, the Hallucination Vulnerability Index (HVI) ranged **33.3%–54.2%**, and the verbatim-EXACT compliance rate was **0% across all 8 law domains**.
+- I first **proved** (via [`legal-hallucination-bench` (private repo · access on request)](https://github.com/vickywu97/legal-hallucination-bench)) that AI cannot be trusted on legal citations: across **5 Chinese LLMs × 29 trap questions** (HVI **33.3%–54.2%**, measured on the 23-question baseline), and the verbatim-EXACT compliance rate was **0% across all 8 law domains**.
 - I then built **Compliance Triangle** on the *same verify engine*, so that every AI-generated statute citation is gated and bad ones are flagged 🟢🟡🔴 — *before* a human ever relies on them.
 - The moat is the **triple qualification**: the same person who designs the verification rules, defines the traps, and signs off every KB entry is a licensed lawyer + tax agent + patent attorney. A pure-engineering or pure-ML team cannot replicate the domain grounding.
 
