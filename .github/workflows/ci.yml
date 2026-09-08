@@ -12,7 +12,13 @@ jobs:
       - name: Checkout compliance-triangle
         uses: actions/checkout@v4
 
-      - name: Checkout legal-hallucination-bench (KB sibling)
+      - name: Checkout legal-hallucination-bench (KB sibling, best-effort)
+        # bench is a PRIVATE repo; the default GITHUB_TOKEN cannot read it, so
+        # this checkout fails in CI. It is best-effort: when the sibling is
+        # absent, the integration tests skip (they gate on the knowledge_base/
+        # subdir) and kb.py falls back to the vendored snapshot under
+        # compliance_triangle/vendor/bench_kb, so the suite still runs green.
+        continue-on-error: true
         uses: actions/checkout@v4
         with:
           repository: vickywu97/legal-hallucination-bench

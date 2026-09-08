@@ -5,7 +5,7 @@
 > 企业三域合规助手（法律合规 · 税务合规 · 知识产权合规），由**同一人**——律师 / 税务师 / 专利代理师——签字背书。
 > 所有 AI 生成的法条引注都经过**存在性 / 时效性 / 内容匹配**三层校验，不过门禁的红框标出。
 
-> 📦 **双仓库作品集 · 产品篇** —— 地基是 [`legal-hallucination-bench`（开源仓库 · MIT）](https://github.com/vickywu97/legal-hallucination-bench)（量化"AI 法律引注幻觉"的离线基准）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`（开源仓库 · MIT）](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md)。
+> 📦 **双仓库作品集 · 产品篇** —— 地基是 [`legal-hallucination-bench`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench)（量化"AI 法律引注幻觉"的离线基准）。完整叙事 / 电梯演讲见 [`docs/PORTFOLIO.md`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench/blob/master/docs/PORTFOLIO.md)。
 
 > 🚀 **在线体验**：**https://vickywu97.github.io/compliance-triangle/** （✅ 已上线，GitHub Pages 部署自 `master` / `docs`）。
 > - **离线打开**：`docs/index.html` 双击即用（无需安装/联网；`github.io` 地址在中国大陆通常不可达，此文件是可靠替代）。
@@ -16,7 +16,7 @@
 
 ## 产品叙事（作品集核心）
 
-我先用量化基准 [`legal-hallucination-bench`（开源仓库 · MIT）](https://github.com/vickywu97/legal-hallucination-bench)
+我先用量化基准 [`legal-hallucination-bench`（私有仓库 · 需授权访问）](https://github.com/vickywu97/legal-hallucination-bench)
 **证明了 AI 在法律引注上不可信**（5 模型 HVI 33.3%–54.2%，8 法域逐字 EXACT 合规率全为 0%）；
 然后用**同一套 verify 引擎**构建了合规三角——让 AI 生成的每条法条引注都经过校验，
 **不过门禁的红框标出**。这不是「会用 AI」，而是「知道 AI 哪里会出错，并设计了系统来防止」。
@@ -84,7 +84,7 @@ python3 -m compliance_triangle.web          # http://127.0.0.1:8000
 
 ```bash
 # 1) 把 Bench 仓库作为同级目录克隆（或设置环境变量指向它）
-#    注：Bench 现已开源（MIT），可直接克隆，无需授权
+#    注：Bench 为私有仓库（需授权访问），未授权时此克隆会失败；不影响离线演示（自动回退到内置 vendor/bench_kb）
 git clone https://github.com/vickywu97/legal-hallucination-bench.git ../legal-hallucination-bench
 
 # 2) 离线演示（无需 API Key / 网络）：跑 5 个内置场景，生成合规备忘录 + 静态展示页
