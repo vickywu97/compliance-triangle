@@ -50,7 +50,7 @@
 > 与地基仓库的"地基 → 产品"关系图：
 > ![作品集架构](./docs/portfolio_architecture.svg)
 >
-> 🧭 **作品集总览**：[`vickywu97-profile`](https://github.com/vickywu97/vickywu97-profile)（串联地基基准 legal-hallucination-bench、产品 compliance-triangle、公开榜单 legal-ai-watch）。
+> 🧭 **作品集总览**：[`vickywu97`](https://github.com/vickywu97/vickywu97)（串联地基基准 legal-hallucination-bench、产品 compliance-triangle、公开榜单 legal-ai-watch）。
 
 ## 多用户 SaaS 模式（v2）
 
