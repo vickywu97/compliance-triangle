@@ -65,7 +65,7 @@ python3 -m compliance_triangle.web          # http://127.0.0.1:8000
 ### HTTP API（可供第三方系统调用）
 所有写操作需 `Authorization: Bearer <token>`（注册返回的会话 token，或用户自建的 API Key）。
 - `POST /api/auth/register` · `POST /api/auth/login` · `GET /api/me`
-- `POST /api/verify` · `POST /api/analyze`（付费模型，需登录 + 配额）
+- `POST /api/verify` · `POST /api/verify-file`（文档上传）· `POST /api/verify-batch`（多条款一键核验，返回 Markdown/CSV 报告）· `POST /api/analyze`（付费模型，需登录 + 配额）
 - `GET /api/analyses` · `GET /api/analyses/<id>` · `DELETE /api/analyses/<id>`
 - `POST /api/keys` · `DELETE /api/keys/<key>` · `GET /healthz`
 

@@ -6,7 +6,8 @@
 
   var TOKEN_KEY = "ct_token";
   var token = localStorage.getItem(TOKEN_KEY) || "";
-  var state = { user: null, usage: null, meta: null, mode: "login" };
+  var state = { user: null, usage: null, meta: null, mode: "login",
+                reportMd: "", reportCsv: "" };
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -276,6 +277,96 @@
     });
   }
 
+  /* ---------------- batch verification ---------------- */
+  var BATCH_GREEN = "🟢", BATCH_YELLOW = "🟡", BATCH_RED = "🔴";
+
+  function rowBadge(item) {
+    var c = item.result.counts || {};
+    if (c[BATCH_RED]) { return BATCH_RED; }
+    if (c[BATCH_YELLOW]) { return BATCH_YELLOW; }
+    if (c[BATCH_GREEN]) { return BATCH_GREEN; }
+    return "⚪";
+  }
+
+  function rowLaws(item) {
+    var its = item.result.items || [];
+    if (!its.length) { return "—"; }
+    return its.map(function (it) {
+      return (it.law_canonical || it.raw_law) + "第" + it.article_no + "条";
+    }).join("; ");
+  }
+
+  function rowNote(item) {
+    var res = item.result;
+    if (!res.items.length) { return res.overall; }
+    return res.items.map(function (it) { return it.note; }).join(" / ");
+  }
+
+  function verifyBatch() {
+    var text = $("batchInput").value;
+    if (!text.trim()) {
+      $("batchReport").className = "empty";
+      $("batchReport").innerHTML = '<span style="color:var(--red)">请先粘贴需要批量核验的条款（每行一条）。</span>';
+      return;
+    }
+    var btn = $("batchBtn");
+    btn.disabled = true;
+    btn.textContent = "核验中…";
+    $("batchReport").className = "empty";
+    $("batchReport").textContent = "正在逐条核验并汇总报告…";
+
+    var path = token ? "/api/verify-batch" : "/verify-batch";
+    var body = { text: text, as_of_date: $("batchAsOf").value || "2026-08-01" };
+
+    api("POST", path, body).then(function (data) {
+      state.reportMd = data.report_md;
+      state.reportCsv = data.report_csv;
+      renderBatchReport(data);
+      if (token && data.usage) { state.usage = data.usage; renderUsage(); loadHistory(); }
+    }).catch(function (e) {
+      $("batchReport").innerHTML = '<span style="color:var(--red)">' + esc(e.message) + "</span>";
+    }).then(function () {
+      btn.disabled = false;
+      btn.textContent = "批量核验并生成报告";
+    });
+  }
+
+  function renderBatchReport(data) {
+    var s = data.summary || {};
+    var box = $("batchReport");
+    var html = '<div class="verdict ' + (s.red ? "red" : (s.yellow ? "yellow" : (s.green ? "green" : "gray"))) + '">' +
+      "条款总数 " + (s.total || 0) + "（🟢 " + (s.green || 0) + " / 🟡 " +
+      (s.yellow || 0) + " / 🔴 " + (s.red || 0) + " / ⚪ " + (s.no_citation || 0) + "）</div>";
+    html += '<table class="batch-table"><thead><tr>' +
+      "<th>#</th><th>条款标识</th><th>结论</th><th>命中法条</th><th>风险提示</th></tr></thead><tbody>";
+    (data.items || []).forEach(function (it) {
+      html += "<tr class=\"" + badgeClass(rowBadge(it)) + "\">" +
+        "<td>" + esc(it.id) + "</td>" +
+        "<td>" + esc(it.text.slice(0, 60)) + "</td>" +
+        "<td>" + rowBadge(it) + "</td>" +
+        "<td>" + esc(rowLaws(it)) + "</td>" +
+        "<td>" + esc(rowNote(it)) + "</td></tr>";
+    });
+    html += "</tbody></table>";
+    box.className = "";
+    box.innerHTML = html;
+    $("batchActions").classList.remove("hidden");
+  }
+
+  function downloadReport(kind) {
+    var content = kind === "md" ? (state.reportMd || "") : (state.reportCsv || "");
+    if (!content) { return; }
+    var blob = new Blob([content], { type: kind === "md" ? "text/markdown;charset=utf-8" : "text/csv;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "合规自查报告." + kind;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   /* ---------------- history ---------------- */
   function loadHistory() {
     api("GET", "/api/analyses?limit=50").then(function (data) {
@@ -386,6 +477,9 @@
     $("logoutBtn").addEventListener("click", logout);
     $("verifyBtn").addEventListener("click", verify);
     $("verifyFileBtn").addEventListener("click", verifyFile);
+    $("batchBtn").addEventListener("click", verifyBatch);
+    $("downloadMd").addEventListener("click", function () { downloadReport("md"); });
+    $("downloadCsv").addEventListener("click", function () { downloadReport("csv"); });
     $("createKeyBtn").addEventListener("click", createKey);
     Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) {
       t.addEventListener("click", function () { switchTab(t.getAttribute("data-tab")); });

@@ -5,6 +5,12 @@
 
 ---
 
+## Unreleased — 批量合规自查（多条款一键核验 + 报告导出）
+
+- **新增 `/api/verify-batch` 端点**（鉴权，单次调用消耗 1 次配额——一个批量即一份自查报告）：接受 `{items:[{id?,text}], text?, as_of_date?}` 或纯文本（每行一条），对每条逐字核验，返回汇总 `{summary, report_md, report_csv, items}`。配套匿名旧版端点 `/verify-batch`（本地/loopback 可用）。
+- **Markdown / CSV 报告导出**：服务端生成 `report_md`（含摘要 + 逐条 🟢🟡🔴 表格 + 需关注清单 + 免责声明）与 `report_csv`（id/文本摘要/结论/命中法条/风险提示，正确 CSV 转义）；前端「批量合规自查」面板新增文本框 + 生成按钮 + 一键下载 `.md`/`.csv`。
+- **实现**：`compliance_triangle/server/batch_report.py`（verify_batch / parse_lines / Markdown·CSV 构建，纯离线复用 verify_integration.verify_answer）；`app.py` 路由与 handler；前端 `static/` 三件套（index.html/app.js/styles.css）。`tests/test_batch_report.py` 9 用例（解析、汇总计数、报告内容、上限、端到端 HTTP 鉴权/匿名/空输入拒绝）。
+
 ## Unreleased — 数据口径修正
 
 - **演示页可分享性与无障碍**：`docs/index.html`（含生成模板 `memo.py`）新增 Open Graph

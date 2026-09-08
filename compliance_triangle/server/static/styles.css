@@ -124,6 +124,22 @@ main { max-width: 1180px; margin: 0 auto; padding: 24px; }
 
 .empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
 
+/* ---------- batch self-check ---------- */
+.batch-panel { margin-top: 20px; }
+.batch-panel textarea { width: 100%; margin-top: 4px; font-family: inherit;
+  font-size: 14px; padding: 10px; border: 1px solid var(--border);
+  border-radius: 8px; resize: vertical; }
+.batch-actions { gap: 10px; }
+.batch-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+.batch-table th, .batch-table td { border: 1px solid var(--border); padding: 7px 9px;
+  text-align: left; vertical-align: top; }
+.batch-table th { background: var(--bg); }
+.batch-table tr.red td:first-child { border-left: 4px solid var(--red); }
+.batch-table tr.yellow td:first-child { border-left: 4px solid var(--yellow); }
+.batch-table tr.green td:first-child { border-left: 4px solid var(--green); }
+.batch-table tr.gray td:first-child { border-left: 4px solid var(--muted); }
+
+
 /* ---------- verdict ---------- */
 .verdict {
   padding: 14px 16px; border-radius: 8px; margin-bottom: 16px;

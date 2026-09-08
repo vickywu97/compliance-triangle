@@ -96,6 +96,25 @@
           <div id="resultBox" class="empty">还没有核验记录。粘贴内容后点「开始核验」。</div>
         </div>
       </div>
+
+      <!-- 批量合规自查 -->
+      <div class="panel batch-panel">
+        <h2>批量合规自查（多条款一键核验 + 报告导出）</h2>
+        <p class="muted small">每行粘贴一条独立条款 / 引注片段（可带 <code>C1:</code> 或 <code>1.</code> 前缀作为标识）。系统对每条逐字核验并汇总为 🟢🟡🔴 报告，支持 Markdown / CSV 一键下载。</p>
+        <textarea id="batchInput" rows="10" placeholder="C1: 依据《公司法》第15条，公司为股东提供担保由股东会决议……&#10;C2: 依据《民法典》第584条，损失赔偿额应当相当于……&#10;C3: 依据《刑法》第9999条，……"></textarea>
+        <div class="row">
+          <label class="inline">基准日
+            <input type="date" id="batchAsOf" value="2026-08-01">
+          </label>
+          <span class="spacer"></span>
+          <button id="batchBtn" class="btn-primary">批量核验并生成报告</button>
+        </div>
+        <div class="row batch-actions hidden" id="batchActions">
+          <button id="downloadMd" class="btn-secondary">下载报告 (.md)</button>
+          <button id="downloadCsv" class="btn-secondary">下载明细 (.csv)</button>
+        </div>
+        <div id="batchReport" class="empty">尚未生成批量报告。</div>
+      </div>
     </div>
 
     <!-- ---- 历史 ---- -->

@@ -16,6 +16,7 @@ Accounts:
 Product (authenticated; each call consumes monthly quota):
     POST   /api/verify       {answer, as_of_date?}       -> 🟢🟡🔴 report
     POST   /api/verify-file  multipart file | {text,filename?} -> doc-level 🟢🟡🔴 report
+    POST   /api/verify-batch {items:[{id?,text}], text?, as_of_date?} -> consolidated 🟢🟡🔴 report (Markdown/CSV)
     POST   /api/analyze      {scenario, model?, as_of?}  -> LLM answer + report
     GET    /api/analyses     history (tenant-scoped)
     GET    /api/analyses/<id>
@@ -56,6 +57,9 @@ from compliance_triangle.runner import build_demo_data
 from compliance_triangle.verify_integration import verify_answer
 from compliance_triangle.doc_extract import (
     parse_multipart, extract_text, UnsupportedFormat,
+)
+from compliance_triangle.server.batch_report import (
+    verify_batch, parse_lines, MAX_ITEMS,
 )
 from compliance_triangle.server import auth as auth_mod
 from compliance_triangle.server import store
@@ -329,6 +333,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._api_verify()
         if method == "POST" and path == "/api/verify-file":
             return self._api_verify_file()
+        if method == "POST" and path == "/api/verify-batch":
+            return self._api_verify_batch()
         if method == "POST" and path == "/api/analyze":
             return self._api_analyze()
         if method == "GET" and path == "/api/analyses":
@@ -349,6 +355,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._legacy_verify()
         if method == "POST" and path == "/verify-file":
             return self._legacy_verify_file()
+        if method == "POST" and path == "/verify-batch":
+            return self._legacy_verify_batch()
         if method == "POST" and path == "/analyze":
             return self._legacy_analyze()
 
@@ -469,6 +477,67 @@ class Handler(BaseHTTPRequestHandler):
             "id": aid, "filename": filename, "chars": len(text),
             "result": result, "usage": summary,
         })
+
+    def _api_verify_batch(self):
+        user = self._require_user()
+        if user is None:
+            return
+        if not self.ctx.kb_available:
+            return self._error(503, f"基准库未加载，无法核验：{self.ctx.kb_error}")
+        # A batch is ONE quota-consuming operation (it yields a single report).
+        if not self._consume_quota(user):
+            return
+        report = self._build_batch_report()
+        if report is None:
+            return  # _build_batch_report already sent the error response
+        title = f"批量自查（{report['summary']['total']} 条）"
+        with store.db_lock():
+            aid = store.save_analysis(
+                self.ctx.conn, int(user["id"]), "verify-batch", title,
+                "\n".join(f"{it['id']}: {it['text'][:200]}" for it in report["items"]),
+                "", report["as_of"], "", report)
+            summary = store.usage_summary(self.ctx.conn, user)
+        return self._json(200, {
+            "id": aid, "summary": report["summary"],
+            "report_md": report["report_md"], "report_csv": report["report_csv"],
+            "items": report["items"], "usage": summary,
+        })
+
+    def _legacy_verify_batch(self):
+        if not self.ctx.kb_available:
+            return self._json(503, {"error": f"基准库未加载，无法核验：{self.ctx.kb_error}"},
+                              {"Content-Type": "application/json; charset=utf-8"})
+        report = self._build_batch_report()
+        if report is None:
+            return
+        return self._json(200, {
+            "summary": report["summary"],
+            "report_md": report["report_md"], "report_csv": report["report_csv"],
+            "items": report["items"],
+        })
+
+    def _build_batch_report(self) -> Optional[Dict]:
+        """Shared parsing for both authed and legacy batch endpoints.
+
+        Returns the report dict, or ``None`` (after sending an error response)
+        when input is invalid.
+        """
+        payload = self._body()
+        as_of = payload.get("as_of_date") or DEFAULT_AS_OF
+        items = payload.get("items")
+        if items is None:
+            text = payload.get("text") or ""
+            items = parse_lines(text)
+        if not isinstance(items, list) or not items:
+            self._error(400, "缺少有效的 items（[] 或 text 字段），无法生成自查报告")
+            return None
+        if len(items) > MAX_ITEMS:
+            items = items[:MAX_ITEMS]
+        try:
+            return verify_batch(items, as_of, self.ctx.laws)
+        except Exception as e:  # noqa: BLE001
+            self._error(500, f"批量核验失败：{e}")
+            return None
 
     def _json_body_safe(self) -> Dict:
         # For multipart uploads the as_of_date may arrive as a separate field;
